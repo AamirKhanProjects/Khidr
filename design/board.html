@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Khidr — Product Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#07130D; --ink-soft:#0B1A13; --tray:#0E2218; --emerald:#1F8060;
+    --cream:#E8E0CD; --cream-dim:rgba(232,224,205,.58); --cream-faint:rgba(232,224,205,.32);
+    --aqua:#A9CCC7; --aqua-deep:#7FB3AC;
+    --line:rgba(232,224,205,.13); --line-strong:rgba(232,224,205,.26);
+    --r:4px; --disp:"Libre Caslon Display",Georgia,serif; --text:"Source Serif 4",Georgia,serif;
+    --skel:rgba(232,224,205,.16); --skel-strong:rgba(232,224,205,.34);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--text);color:var(--cream);-webkit-font-smoothing:antialiased;
+    background:var(--ink);padding:46px 46px 120px}
+  .board{max-width:1640px;margin:0 auto}
+  .kick{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--aqua);font-weight:600;margin-bottom:12px}
+  h1.bigtitle{font-family:var(--disp);font-size:58px;letter-spacing:-.5px;line-height:.95}
+  h1.bigtitle .dot{color:inherit}
+  .lead{font-size:18px;color:var(--cream-dim);max-width:720px;line-height:1.5;margin-top:18px;font-style:italic}
+  .legend{display:flex;gap:26px;margin-top:24px;flex-wrap:wrap;font-size:12.5px;color:var(--cream-dim)}
+  .legend b{color:var(--cream);font-weight:600}
+  .dotc{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:7px;vertical-align:middle}
+
+  .zone{margin-top:74px;border-top:1px solid var(--line-strong);padding-top:34px}
+  .zonehead{display:flex;align-items:baseline;gap:18px;margin-bottom:26px}
+  .zonehead h2{font-family:var(--disp);font-size:34px;letter-spacing:.2px}
+  .zonehead .num{font-family:var(--disp);font-size:20px;color:var(--emerald)}
+  .zonehead p{font-size:14px;color:var(--cream-dim);max-width:560px;line-height:1.5}
+
+  /* IA / sitemap */
+  .ia{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+  .ia-col{flex:1;min-width:230px;background:var(--ink-soft);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+  .ia-col h3{font-family:var(--disp);font-size:20px;margin-bottom:4px}
+  .ia-col .tab{font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--aqua);font-weight:600;margin-bottom:12px}
+  .ia-col ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+  .ia-col li{font-size:13.5px;color:var(--cream-dim);line-height:1.4;padding-left:14px;position:relative}
+  .ia-col li::before{content:"";position:absolute;left:0;top:9px;width:7px;height:1.5px;background:var(--line-strong)}
+  .ia-col li b{color:var(--cream);font-weight:600}
+
+  /* wireframe row (horizontal scroll) */
+  .scrollrow{display:flex;gap:22px;overflow-x:auto;padding-bottom:18px}
+  .scrollrow::-webkit-scrollbar{height:8px}
+  .scrollrow::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:8px}
+  .wfcard{flex:0 0 248px;display:flex;flex-direction:column;gap:14px}
+  .wf{width:248px;height:498px;border-radius:30px;border:7px solid #04100A;position:relative;overflow:hidden;
+    background:var(--ink-soft)}
+  .wf .nch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:78px;height:16px;background:#04100A;border-radius:0 0 9px 9px;z-index:4}
+  .wf .in{position:absolute;inset:0;padding:30px 15px 15px;overflow:hidden}
+  /* skeleton primitives */
+  .bar{height:7px;background:var(--skel);border-radius:2px;margin-bottom:7px}
+  .bar.t{height:11px;background:var(--skel-strong);width:85%}
+  .bar.s{width:55%} .bar.xs{width:35%}
+  .lbl{font-size:9px;letter-spacing:1.3px;text-transform:uppercase;color:var(--aqua);font-weight:600;margin-bottom:9px;display:flex;align-items:center;gap:5px}
+  .lbl::before{content:none}
+  .mk{font-family:var(--disp);font-size:17px;margin-bottom:3px}.mk .dot{color:inherit}
+  .strap{font-size:8px;letter-spacing:1.3px;text-transform:uppercase;color:var(--cream-faint);margin-bottom:14px}
+  .hd{font-family:var(--disp);font-size:15px;line-height:1.15;margin-bottom:8px}
+  .rule{height:1px;background:var(--line);margin:13px 0}
+  .act{background:var(--aqua);color:#08130E;font-size:11px;font-weight:600;text-align:center;padding:9px;border-radius:var(--r);margin-top:8px}
+  .act.line{background:transparent;color:var(--cream);border:1px solid var(--line-strong)}
+  .traybox{background:var(--tray);margin:12px -15px -15px;padding:14px 15px;border-top:1px solid rgba(169,204,199,.22)}
+  .chipline{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+  .chip{font-size:8.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--aqua);border:1px solid var(--line-strong);border-radius:3px;padding:3px 8px}
+  .reprow{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--line)}
+  .ava{width:26px;height:26px;border-radius:50%;background:var(--skel)}
+  .flag{font-size:8px;color:var(--emerald);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-top:2px}
+  .tabbar{position:absolute;bottom:0;left:0;right:0;height:42px;background:var(--ink);border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center}
+  .tabbar span{font-size:8px;letter-spacing:.5px;text-transform:uppercase;color:var(--cream-faint)}
+  .tabbar span.on{color:var(--aqua)}
+  .stat{font-family:var(--disp);font-size:30px;color:var(--aqua);text-align:center}
+  .statlbl{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--cream-faint);text-align:center;margin-bottom:14px}
+
+  .wfdesc h3{font-family:var(--disp);font-size:19px;margin-bottom:6px}
+  .wfdesc .n{color:var(--emerald)}
+  .wfdesc p{font-size:12.5px;color:var(--cream-dim);line-height:1.5}
+  .wfdesc .tag{font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--cream-faint);margin-top:8px}
+
+  /* flows */
+  .flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap}
+  .step{flex:1;min-width:180px;background:var(--ink-soft);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-right:30px;position:relative;margin-bottom:14px}
+  .step::after{content:"→";position:absolute;right:-22px;top:50%;transform:translateY(-50%);color:var(--emerald);font-size:18px}
+  .step:last-child{margin-right:0}.step:last-child::after{display:none}
+  .step .s-n{font-family:var(--disp);font-size:15px;color:var(--emerald);margin-bottom:7px}
+  .step h4{font-size:14px;font-weight:600;margin-bottom:5px}
+  .step p{font-size:12px;color:var(--cream-dim);line-height:1.45}
+
+  /* competitor matrix */
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:13px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:10.5px;letter-spacing:1.3px;text-transform:uppercase;color:var(--aqua);font-weight:600}
+  td b{color:var(--cream)} td{color:var(--cream-dim);line-height:1.45}
+  .yes{color:var(--emerald);font-weight:600}.no{color:var(--cream-faint)}
+
+  /* backlog */
+  .backlog{display:flex;gap:18px;flex-wrap:wrap}
+  .bl-col{flex:1;min-width:280px;background:var(--ink-soft);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+  .bl-col h3{font-family:var(--disp);font-size:22px;margin-bottom:3px}
+  .bl-col .when{font-size:10.5px;letter-spacing:1.3px;text-transform:uppercase;font-weight:600;margin-bottom:14px}
+  .bl-col.now .when{color:var(--emerald)} .bl-col.next .when{color:var(--aqua)} .bl-col.later .when{color:var(--cream-faint)}
+  .bl-col ul{list-style:none;display:flex;flex-direction:column;gap:11px}
+  .bl-col li{font-size:13px;color:var(--cream-dim);line-height:1.45;padding-left:15px;position:relative}
+  .bl-col li::before{content:"";position:absolute;left:0;top:9px;width:7px;height:1.5px;background:var(--skel-strong)}
+  .bl-col li b{color:var(--cream);font-weight:600}
+  .hint{margin-top:60px;text-align:center;font-size:12.5px;color:var(--cream-faint);font-style:italic}
+</style>
+</head>
+<body>
+<div class="board">
+
+  <div class="kick">Product board / scroll through / comment freely</div>
+  <h1 class="bigtitle">Khidr<span class="dot">.</span> — the whole product on one canvas</h1>
+  <p class="lead">Information architecture, every screen as a wireframe, the two core flows, the competitor map, and a Now / Next / Later backlog. Scroll down through the zones. The wireframe strip (Zone 2) scrolls sideways.</p>
+  <div class="legend">
+    <span><span class="dotc" style="background:var(--emerald)"></span><b>Emerald</b> = action / live moment</span>
+    <span><span class="dotc" style="background:var(--aqua)"></span><b>Aqua</b> = the primary call-to-action</span>
+    <span><span class="dotc" style="background:var(--skel-strong)"></span><b>Grey bars</b> = placeholder content</span>
+  </div>
+
+  <!-- ZONE 1: IA -->
+  <div class="zone">
+    <div class="zonehead"><span class="num">01</span><h2>Information architecture</h2>
+      <p>Four tabs plus a first-run setup. Everything points at one verb: act on the story in front of you, routed to your own MP.</p></div>
+    <div class="ia">
+      <div class="ia-col"><div class="tab">First run</div><h3>Setup</h3><ul>
+        <li><b>Mission & how it works</b>, in plain language. No assumed knowledge.</li>
+        <li><b>Postcode once.</b> Resolve your MP (postcodes.io + Parliament Members API). Stays on device.</li>
+        <li><b>Pick topics.</b> Gaza, Sudan, Kashmir, domestic civil liberties, etc.</li>
+        <li><b>Notifications.</b> Opt in to time-sensitive vote alerts only.</li>
+      </ul></div>
+      <div class="ia-col"><div class="tab">Tab 1</div><h3>Today</h3><ul>
+        <li><b>The lead.</b> The single most important story of the day.</li>
+        <li><b>Priority action.</b> If a vote is imminent, it sits at the top.</li>
+        <li><b>2–3 key items</b> beneath. A digest, not a firehose.</li>
+      </ul></div>
+      <div class="ia-col"><div class="tab">Tab 2</div><h3>Feed</h3><ul>
+        <li><b>Full curated list.</b> Hairline-separated, editorial.</li>
+        <li><b>Filter</b> by topic (underline tabs).</li>
+        <li>Each item carries Email + WriteToThem + Call inline.</li>
+      </ul></div>
+      <div class="ia-col"><div class="tab">Tab 3</div><h3>Your MP</h3><ul>
+        <li><b>Who represents you</b> in Parliament, with contact.</li>
+        <li><b>Why they matter now</b> (on the relevant committee, or a likely rebel).</li>
+        <li>Contact your MP without a story attached.</li>
+      </ul></div>
+      <div class="ia-col"><div class="tab">Tab 4</div><h3>Impact</h3><ul>
+        <li><b>Your activity</b> (emails sent, calls made).</li>
+        <li><b>Outcome loop</b>: how the vote went, how your MP voted.</li>
+        <li><b>Aggregate</b>: constituent volume this week.</li>
+      </ul></div>
+      <div class="ia-col"><div class="tab">Top-right</div><h3>More</h3><ul>
+        <li><b>Sources & who curates.</b> Trust layer.</li>
+        <li><b>How we are funded.</b> Donations / grants.</li>
+        <li>Settings, postcode, notifications, accessibility.</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- ZONE 2: WIREFRAMES -->
+  <div class="zone">
+    <div class="zonehead"><span class="num">02</span><h2>Screens</h2>
+      <p>Low-fidelity wireframes in the real palette. Scroll sideways. Each has a short description below it.</p></div>
+    <div class="scrollrow">
+
+      <!-- Onboarding -->
+      <div class="wfcard"><div class="wf"><div class="nch"></div><div class="in">
+        <div style="height:26px"></div>
+        <div class="mk">Khidr<span class="dot">.</span></div>
+        <div class="strap">Find your MP</div>
+        <div class="bar t"></div><div class="bar s"></div>
+        <div style="height:14px"></div>
+        <div class="bar" style="height:30px;border:1px solid var(--line-strong);background:transparent"></div>
+        <div class="lbl" style="margin-top:18px">Pick your topics</div>
+        <div class="chipline"><span class="chip">Gaza</span><span class="chip">Sudan</span><span class="chip">Kashmir</span><span class="chip">Civil rights</span></div>
+        <div class="act">Continue</div>
+      </div></div>
+        <div class="wfdesc"><h3><span class="n">1.</span> Setup</h3><p>Mission and how-it-works in plain language, then postcode once to find your MP, then topics. Sets up routing and a relevant Today digest.</p><div class="tag">First run / borrow MP lookup</div></div>
+      </div>
+
+      <!-- Today -->
+      <div class="wfcard"><div class="wf"><div class="nch"></div><div class="in">
+        <div style="height:20px"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span class="mk">Khidr<span class="dot">.</span></span><span style="font-size:9px;color:var(--aqua)">Your MP</span></div>
+        <div class="strap">Today</div>
+        <div class="traybox" style="margin:0 -15px 12px;background:var(--tray);border-radius:0;padding:12px 15px;border:none;border-bottom:1px solid rgba(169,204,199,.2)">
+          <div class="lbl">Priority action / vote tomorrow</div>
+          <div class="hd" style="font-size:13px">Commons votes on arms-export conditions</div>
+          <div class="act" style="margin-top:6px">Email your MP</div>
+        </div>
+        <div class="lbl">The lead</div>
+        <div class="hd">UN inquiry documents torture of detainees</div>
+        <div class="bar"></div><div class="bar s"></div>
+        <div class="rule"></div>
+        <div class="bar t"></div><div class="bar xs"></div>
+        <div class="tabbar"><span class="on">Today</span><span>Feed</span><span>MP</span><span>Impact</span></div>
+      </div></div>
+        <div class="wfdesc"><h3><span class="n">2.</span> Today (home)</h3><p>A daily digest. The single lead story, plus the day's priority action pinned at top when a vote is imminent. Calm, not a firehose.</p><div class="tag">Tab 1 / your home idea</div></div>
+      </div>
+
+      <!-- Feed -->
+      <div class="wfcard"><div class="wf"><div class="nch"></div><div class="in">
+        <div style="height:20px"></div>
+        <div class="mk">Feed</div><div class="strap">All stories / filter by topic</div>
+        <div class="chipline"><span class="chip" style="color:#08130E;background:var(--aqua);border:none">All</span><span class="chip">Gaza</span><span class="chip">Sudan</span></div>
+        <div class="lbl">Gaza / human rights</div><div class="hd">Torture of detainees documented</div><div class="bar s"></div>
+        <div style="display:flex;gap:8px;margin-top:8px"><span class="act" style="flex:1;margin:0">Email</span><span class="act line" style="flex:1;margin:0">Call</span></div>
+        <div class="rule"></div>
+        <div class="lbl">Sudan</div><div class="hd" style="font-size:13px">Aid convoys blocked as famine spreads</div><div class="bar s"></div>
+        <div class="tabbar"><span>Today</span><span class="on">Feed</span><span>MP</span><span>Impact</span></div>
+      </div></div>
+        <div class="wfdesc"><h3><span class="n">3.</span> Feed</h3><p>The full curated list. Editorial hairline rows, topic filter, inline Email / Call on every story.</p><div class="tag">Tab 2 / the moat</div></div>
+      </div>
+
+      <!-- Story detail -->
+      <div class="wfcard"><div class="wf"><div class="nch"></div><div class="in">
+        <div style="height:20px"></div>
+        <div class="lbl">Gaza / human rights</div>
+        <div class="hd" style="font-size:18px">UN inquiry documents torture of detainees</div>
+        <div class="bar"></div><div class="bar"></div><div class="bar s"></div>
+        <div style="font-size:10px;color:var(--aqua);border-bottom:1px solid var(--aqua-deep);display:inline-block;margin:6px 0">Read the full report ↗</div>
+        <div style="font-size:9px;color:var(--cream-faint);margin-top:8px">Attached bill: via UK Bills API</div>
+        <div class="traybox">
+          <div class="lbl">Take action / contact your MP</div>
+          <div class="act">Email your MP</div>
+          <div class="act line">Send via WriteToThem</div>
+          <div class="act line">Call their office</div>
+        </div>
+      </div></div>
+        <div class="wfdesc"><h3><span class="n">4.</span> Story & action</h3><p>Blurb, link to the original, the actual bill attached via the UK Bills API, then the tinted action tray. Email and WriteToThem are primary; calling is secondary.</p><div class="tag">Pushed / the core screen</div></div>
+      </div>
+
+      <!-- Call flow -->
+      <div class="wfcard"><div class="wf"><div class="nch"></div><div class="in">
+        <div style="height:20px"></div>
+        <div class="lbl">Call / script ready</div>
+        <div class="reprow" style="border:none"><div class="ava"></div><div><div class="bar t" style="width:70px;margin:0"></div><div class="flag">On the committee / matters now</div></div></div>
+        <div style="background:var(--ink-soft);border:1px solid var(--line);border-radius:var(--r);padding:11px;margin:10px 0">
+          <div class="bar"></div><div class="bar"></div><div class="bar s"></div>
+        </div>
+        <div class="act" style="font-size:13px;padding:12px">Tap to call</div>
+        <div class="act line" style="margin-top:14px">I made the call ✓</div>
+        <div style="font-size:9px;color:var(--cream-faint);margin-top:10px;text-align:center">Logged to your impact</div>
+      </div></div>
+        <div class="wfdesc"><h3><span class="n">5.</span> Call flow</h3><p>Your MP, an optional short script, tap to dial, one-tap log. Offered for those who prefer it; secondary to email in the UK.</p><div class="tag">Calling / secondary in the UK</div></div>
+      </div>
+
+      <!-- Write composer -->
+      <div class="wfcard"><div class="wf"><div class="nch"></div><div class="in">
+        <div style="height:20px"></div>
+        <div class="lbl">Write / your words</div>
+        <div style="background:var(--ink-soft);border:1px solid var(--line);border-radius:var(--r);padding:11px;height:138px;position:relative">
+          <div class="bar"></div><div class="bar"></div><div class="bar s"></div>
+        </div>
+        <div class="lbl" style="margin-top:14px">Then send it yourself</div>
+        <div class="act">Open my email</div>
+        <div class="act line">Send via WriteToThem</div>
+        <div style="font-size:9px;color:var(--cream-faint);margin-top:8px;text-align:center">Khidr never sends. It opens your own app.</div>
+      </div></div>
+        <div class="wfdesc"><h3><span class="n">6.</span> Write a message</h3><p>Write in your own words from a light starting scaffold (v1 has no AI). Then choose how to send it yourself: open your own email, or hand off to WriteToThem in-app. Khidr never transmits anything.</p><div class="tag">Persuasion / you send, not us</div></div>
+      </div>
+
+      <!-- Your MP -->
+      <div class="wfcard"><div class="wf"><div class="nch"></div><div class="in">
+        <div style="height:20px"></div>
+        <div class="mk">Your MP</div><div class="strap">Matched to your postcode</div>
+        <div class="reprow"><div class="ava"></div><div><div class="bar t" style="width:90px;margin:0 0 4px"></div><div class="bar xs" style="margin:0"></div><div class="flag">On the relevant committee / matters now</div></div></div>
+        <div class="lbl" style="margin-top:14px">Contact</div>
+        <div class="act">Email your MP</div>
+        <div class="act line">Send via WriteToThem</div>
+        <div class="act line">Call their office</div>
+        <div class="tabbar"><span>Today</span><span>Feed</span><span class="on">MP</span><span>Impact</span></div>
+      </div></div>
+        <div class="wfdesc"><h3><span class="n">7.</span> Your MP</h3><p>Your one MP, flagged when they matter now (e.g. on the relevant committee). Email, WriteToThem, or call directly.</p><div class="tag">Tab 3 / constituency = leverage</div></div>
+      </div>
+
+      <!-- Impact -->
+      <div class="wfcard"><div class="wf"><div class="nch"></div><div class="in">
+        <div style="height:20px"></div>
+        <div class="mk">Impact</div><div class="strap">What your voice did</div>
+        <div style="display:flex;gap:10px;margin:10px 0">
+          <div style="flex:1"><div class="stat">7</div><div class="statlbl">messages sent</div></div>
+          <div style="flex:1"><div class="stat">2</div><div class="statlbl">calls made</div></div>
+        </div>
+        <div class="rule"></div>
+        <div class="lbl">Outcome</div>
+        <div class="bar t"></div><div class="bar s"></div>
+        <div style="font-size:9px;color:var(--emerald);margin-top:6px">Your MP voted Aye (Commons vote)</div>
+        <div class="rule"></div>
+        <div style="font-size:10px;color:var(--cream-dim)">1,240 constituents acted this week</div>
+        <div class="tabbar"><span>Today</span><span>Feed</span><span>MP</span><span class="on">Impact</span></div>
+      </div></div>
+        <div class="wfdesc"><h3><span class="n">8.</span> Impact</h3><p>The loop almost everyone misses: your activity, how the vote actually went, how your MP voted, and the constituent volume around you.</p><div class="tag">Tab 4 / retention + trust</div></div>
+      </div>
+
+      <!-- About / trust -->
+      <div class="wfcard"><div class="wf"><div class="nch"></div><div class="in">
+        <div style="height:20px"></div>
+        <div class="mk">About Khidr<span class="dot">.</span></div><div class="strap">Trust & transparency</div>
+        <div class="lbl">How we curate</div><div class="bar"></div><div class="bar s"></div>
+        <div class="rule"></div>
+        <div class="lbl">Our sources</div><div class="bar"></div><div class="bar xs"></div>
+        <div class="rule"></div>
+        <div class="lbl">How we are funded</div><div class="bar s"></div>
+        <div class="act" style="margin-top:14px">Support Khidr</div>
+      </div></div>
+        <div class="wfdesc"><h3><span class="n">9.</span> About / trust</h3><p>Who curates, the sourcing rules, the funding model, and the donate path. Non-negotiable for a serious nonprofit.</p><div class="tag">More / the trust layer</div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ZONE 3: FLOWS -->
+  <div class="zone">
+    <div class="zonehead"><span class="num">03</span><h2>The two core flows</h2>
+      <p>In the UK, email and WriteToThem lead; calling is secondary. Both route to your own MP.</p></div>
+
+    <div class="kick">Write flow / primary in the UK, you send it yourself</div>
+    <div class="flow" style="margin-bottom:30px">
+      <div class="step"><div class="s-n">1</div><h4>Draft</h4><p>Write in your own words from a light starting scaffold (v1 has no AI).</p></div>
+      <div class="step"><div class="s-n">2</div><h4>Make it yours</h4><p>A pre-fill is only a starting point; you shape the wording.</p></div>
+      <div class="step"><div class="s-n">3</div><h4>Choose how</h4><p>Your own email app, or hand off to WriteToThem.</p></div>
+      <div class="step"><div class="s-n">4</div><h4>Khidr hands off</h4><p>Opens your email (mailto) or WriteToThem in-app. Khidr never transmits.</p></div>
+      <div class="step"><div class="s-n">5</div><h4>You send</h4><p>From your address, no campaign metadata, so it never auto-batches.</p></div>
+    </div>
+
+    <div class="kick">Call flow / secondary, for those who prefer it</div>
+    <div class="flow">
+      <div class="step"><div class="s-n">1</div><h4>Story</h4><p>Read the blurb, tap Call.</p></div>
+      <div class="step"><div class="s-n">2</div><h4>Your MP</h4><p>Flagged when they matter now (e.g. on the committee).</p></div>
+      <div class="step"><div class="s-n">3</div><h4>Script</h4><p>Short, respectful points to raise. Not a demand.</p></div>
+      <div class="step"><div class="s-n">4</div><h4>Tap to dial</h4><p>Native dialer to the office number. Zero extra friction.</p></div>
+      <div class="step"><div class="s-n">5</div><h4>Log it</h4><p>One tap. Feeds your Impact and the aggregate count.</p></div>
+    </div>
+  </div>
+
+  <!-- ZONE 4: COMPETITORS -->
+  <div class="zone">
+    <div class="zonehead"><span class="num">04</span><h2>The competitor map</h2>
+      <p>The empty square is exactly Khidr: 5 Calls-grade contact, a curated community feed, constituency routing, and metadata-free email plus WriteToThem.</p></div>
+    <table>
+      <tr><th>Tool</th><th>Calls-first</th><th>Write (email / form)</th><th>Curated news</th><th>Community focus</th><th>Anti-batch</th></tr>
+      <tr><td><b>5 Calls</b></td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">General</td><td class="yes">Yes</td></tr>
+      <tr><td><b>Resistbot</b></td><td class="no">No</td><td class="yes">Yes + receipt</td><td class="no">No</td><td class="no">General</td><td class="no">Templated</td></tr>
+      <tr><td><b>Democracy.io</b></td><td class="no">No</td><td class="yes">Webforms</td><td class="no">No</td><td class="no">General</td><td class="no">Blast (all 3)</td></tr>
+      <tr><td><b>Countable / Causes</b></td><td class="no">No</td><td class="yes">Email</td><td class="yes">Yes (general)</td><td class="no">General</td><td class="no">No</td></tr>
+      <tr><td><b>CAIR Action</b></td><td class="no">Alerts</td><td class="no">Petition</td><td class="no">Alerts</td><td class="yes">Muslim</td><td class="no">Blast</td></tr>
+      <tr><td><b>Emgage / MPower</b></td><td class="no">No</td><td class="no">Petition</td><td class="no">No</td><td class="yes">Muslim</td><td class="no">Blast</td></tr>
+      <tr style="background:rgba(28,122,91,.12)"><td><b style="color:var(--aqua)">Khidr</b></td><td class="yes">Yes</td><td class="yes">Self-written, you send</td><td class="yes">Yes (curated)</td><td class="yes">Muslim</td><td class="yes">Yes</td></tr>
+    </table>
+  </div>
+
+  <!-- ZONE 5: BACKLOG -->
+  <div class="zone">
+    <div class="zonehead"><span class="num">05</span><h2>What to build, and when</h2>
+      <p>UK first, legally clean. Borrow the MP-routing and contact layer, then build outward.</p></div>
+    <div class="backlog">
+      <div class="bl-col now"><div class="when">Now / v1 launch</div><h3>The core</h3><ul>
+        <li><b>Curated feed</b> + Today digest, your own blurbs, link-out.</li>
+        <li><b>Knowledge layer</b>: plain-language explainers, no assumed knowledge.</li>
+        <li><b>MP routing</b>: postcodes.io + UK Parliament Members API. Free, no key.</li>
+        <li><b>Three send modes</b>: your own email (mailto), WriteToThem, and a call. Khidr never transmits.</li>
+        <li><b>Bill attached</b> via the UK Bills API.</li>
+        <li><b>Trust page</b>: sources, who curates, funding.</li>
+      </ul></div>
+      <div class="bl-col next"><div class="when">Next / earns trust</div><h3>The loop</h3><ul>
+        <li><b>Call-anxiety reducers</b>: what-to-expect line, after-hours voicemail prompt.</li>
+        <li><b>Outcome follow-up</b>: how the vote went, how your MP voted (Commons Votes API).</li>
+        <li><b>Impact screen</b>: your activity + aggregate constituent volume.</li>
+        <li><b>"Why your MP matters now"</b>: committee / likely-rebel flags.</li>
+        <li><b>AI Assist</b> button in the composer.</li>
+        <li><b>Contact-in day</b> + time-sensitive push for imminent votes, sparingly.</li>
+      </ul></div>
+      <div class="bl-col later"><div class="when">Later / if it earns it</div><h3>The reach</h3><ul>
+        <li><b>MP accountability scorecard</b> over time (non-partisan).</li>
+        <li><b>Devolved & local</b>: MSPs, MSs, MLAs, councillors.</li>
+        <li><b>US module</b> (same shell), once a US lead clears the legal gate.</li>
+        <li><b>Shareable action cards</b> (growth loop).</li>
+        <li><b>Accessibility pass</b> (screen-reader parity with 5 Calls).</li>
+        <li><b>Localisation</b> (Arabic, Urdu, etc.).</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <div class="hint">End of board. Scroll back up and tell me what to change, add, or cut.</div>
+
+</div>
+</body>
+</html>

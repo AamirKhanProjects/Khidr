@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Khidr — Interactive Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#07130D;
+    --ink-2:#0B1A13;
+    --tray:#0E2218;
+    --emerald:#1F8060;
+    --cream:#E8E0CD;
+    --cream-dim:rgba(232,224,205,.56);
+    --cream-faint:rgba(232,224,205,.30);
+    --aqua:#A9CCC7;
+    --aqua-deep:#7FB3AC;
+    --line:rgba(232,224,205,.12);
+    --line-strong:rgba(232,224,205,.24);
+    --danger:#D98A82;
+    --r:5px;
+    --disp:"Libre Caslon Display",Georgia,serif;
+    --text:"Source Serif 4",Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:var(--text);color:var(--cream);background:var(--ink);
+    -webkit-font-smoothing:antialiased;padding:48px 24px 80px;min-height:100vh}
+  .stage{max-width:1240px;margin:0 auto}
+  .kick{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--aqua);font-weight:600;margin-bottom:12px}
+  h1.t{font-family:var(--disp);font-size:46px;letter-spacing:-.5px;line-height:.96}
+  .lead{font-size:16px;color:var(--cream-dim);max-width:620px;line-height:1.55;margin:15px 0 4px;font-style:italic}
+  .hint{font-size:13px;color:var(--cream-faint);margin:10px 0 40px;line-height:1.6}
+  .hint b{color:var(--cream-dim);font-weight:600}
+
+  /* device */
+  .device-wrap{display:flex;justify-content:center;gap:40px;flex-wrap:wrap;align-items:flex-start}
+  .phone{width:344px;height:740px;background:var(--ink);border-radius:46px;
+    border:10px solid #03100A;overflow:hidden;position:relative;
+    box-shadow:0 40px 80px -30px rgba(0,0,0,.7),0 0 0 1px rgba(232,224,205,.04)}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:116px;height:24px;
+    background:#03100A;border-radius:0 0 15px 15px;z-index:60}
+  .screen-host{position:absolute;inset:0;overflow:hidden;display:flex;flex-direction:column}
+
+  /* screens crossfade */
+  .screen{position:absolute;inset:0;display:flex;flex-direction:column;
+    opacity:0;visibility:hidden;transition:opacity .28s ease}
+  .screen.active{opacity:1;visibility:visible;z-index:2}
+  .scrollbody{flex:1;overflow-y:auto;overflow-x:hidden}
+  .scrollbody::-webkit-scrollbar{display:none}
+  .scrollbody{scrollbar-width:none}
+
+  .pad{padding:0 22px}
+
+  /* header */
+  .apphd{padding:52px 22px 14px;display:flex;align-items:flex-end;justify-content:space-between}
+  .word{font-family:var(--disp);font-size:29px;letter-spacing:-.3px;line-height:1}
+  .apphd .right{font-size:12.5px;color:var(--aqua);font-weight:600;letter-spacing:.2px;text-decoration:none;cursor:pointer}
+  .strap{font-size:9.5px;letter-spacing:1.9px;text-transform:uppercase;color:var(--cream-faint);font-weight:600;padding:0 22px 12px;border-bottom:1px solid var(--line)}
+
+  .label{font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--aqua);font-weight:600}
+  .label.dim{color:var(--cream-faint)}
+  .h-serif{font-family:var(--disp);line-height:1.18;letter-spacing:-.2px}
+  .src{font-size:12px;color:var(--cream-dim);font-style:italic}
+  .muted{color:var(--cream-dim)}
+  .rule{height:1px;background:var(--line)}
+
+  /* buttons */
+  .btn{display:block;width:100%;text-align:center;border-radius:var(--r);font-weight:600;
+    letter-spacing:.2px;font-family:var(--text);cursor:pointer;border:none;font-size:15px;
+    transition:opacity .12s,transform .12s}
+  .btn:active{opacity:.85;transform:scale(.985)}
+  .btn.solid{background:var(--aqua);color:#07130D;padding:15px}
+  .btn.solid:disabled{background:rgba(169,204,199,.22);color:rgba(7,19,13,.45);cursor:not-allowed}
+  .btn.line{background:transparent;border:1px solid var(--line-strong);color:var(--cream);padding:14px}
+  .btn.line:hover{border-color:var(--aqua-deep)}
+  .btn.sm{padding:12px;font-size:13.5px}
+
+  /* ===== ONBOARDING ===== */
+  .ob{padding:58px 26px 26px;display:flex;flex-direction:column;height:100%}
+  .obprog{display:flex;gap:7px;margin-bottom:26px}
+  .obprog span{height:3px;flex:1;background:var(--line-strong);border-radius:2px;transition:.3s}
+  .obprog span.on{background:var(--aqua)}
+  .obsteps{flex:1;overflow-y:auto;display:flex}
+  .obsteps::-webkit-scrollbar{display:none}
+  .obstep{display:none;flex-direction:column;width:100%}
+  .obstep.active{display:flex}
+  .obnav{display:flex;gap:12px;align-items:center;margin-top:18px}
+  .obback{background:none;border:none;color:var(--cream-dim);font-family:var(--text);font-size:14px;font-weight:600;cursor:pointer;padding:14px 4px}
+  .obback.hidden{visibility:hidden}
+  .obnav .btn{flex:1}
+  .prov{font-size:10.5px;color:var(--cream-faint);font-style:italic;margin-top:8px}
+  .ob h2{font-family:var(--disp);font-size:32px;letter-spacing:-.4px;line-height:1.05;margin-bottom:10px}
+  .ob .sub{font-size:14px;color:var(--cream-dim);line-height:1.55;font-style:italic;margin-bottom:26px}
+  .steprow{display:flex;gap:14px;margin-bottom:18px;align-items:baseline}
+  .step-n{font-family:var(--disp);font-size:21px;color:var(--aqua);width:30px;flex:0 0 30px}
+  .steprow h4{font-size:15.5px;font-weight:600;margin-bottom:3px}
+  .steprow p{font-size:13px;color:var(--cream-dim);line-height:1.45}
+  .fieldlabel{font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--cream-faint);font-weight:600;margin:6px 0 9px}
+  .field{width:100%;background:transparent;border:1px solid var(--line-strong);border-radius:var(--r);
+    padding:14px;color:var(--cream);font-size:15px;font-family:var(--text);margin-bottom:6px}
+  .field::placeholder{color:var(--cream-faint)}
+  .field:focus{outline:none;border-color:var(--aqua-deep)}
+  .microline{font-size:11.5px;color:var(--cream-faint);line-height:1.45;font-style:italic;margin-bottom:22px}
+  .chips{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:8px}
+  .chip{font-size:13px;padding:9px 14px;border:1px solid var(--line-strong);border-radius:var(--r);
+    color:var(--cream-dim);cursor:pointer;user-select:none}
+  .chip.on{background:var(--aqua);color:#07130D;border-color:var(--aqua);font-weight:600}
+
+  /* ===== TODAY ===== */
+  .priority{background:var(--tray);padding:17px 22px;border-bottom:1px solid var(--line)}
+  .priority .label{margin-bottom:9px}
+  .priority h3{font-family:var(--disp);font-size:19px;line-height:1.2;margin-bottom:14px}
+  .leadblk{padding:20px 22px}
+  .leadblk .label{margin-bottom:11px}
+  .leadblk h2{font-family:var(--disp);font-size:25px;line-height:1.16;letter-spacing:-.3px;margin-bottom:12px}
+  .leadblk p{font-size:14.5px;color:var(--cream-dim);line-height:1.6;margin-bottom:14px}
+  .calm{font-size:11.5px;color:var(--cream-faint);font-style:italic;padding:4px 22px 22px}
+
+  /* ===== FEED ===== */
+  .tabs{display:flex;gap:22px;padding:14px 22px 0;border-bottom:1px solid var(--line);overflow-x:auto}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{font-size:13.5px;color:var(--cream-dim);padding-bottom:12px;white-space:nowrap;font-weight:600;
+    border-bottom:2px solid transparent;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--text)}
+  .tab.on{color:var(--cream);border-bottom-color:var(--aqua)}
+  .storyrow{padding:19px 22px;border-bottom:1px solid var(--line);cursor:pointer}
+  .storyrow:hover{background:var(--ink-2)}
+  .storyrow .label{margin-bottom:8px}
+  .storyrow h3{font-family:var(--disp);font-size:18px;line-height:1.22;letter-spacing:-.2px;margin-bottom:9px}
+  .storyrow .meta{display:flex;align-items:center;gap:10px;margin-top:11px}
+  .inline-act{font-size:12.5px;font-weight:600;color:var(--aqua)}
+  .inline-act.ghost{color:var(--cream-dim)}
+  .dot{width:3px;height:3px;border-radius:50%;background:var(--cream-faint)}
+
+  /* ===== STORY DETAIL ===== */
+  .back{font-size:13px;color:var(--aqua);font-weight:600;padding:50px 22px 0;cursor:pointer;display:inline-block}
+  .story{padding:16px 22px 0}
+  .story .label{margin-bottom:11px}
+  .story h1{font-family:var(--disp);font-size:27px;line-height:1.14;letter-spacing:-.3px;margin-bottom:16px}
+  .story p{font-size:15px;color:var(--cream-dim);line-height:1.62;margin-bottom:16px}
+  .readlink{font-size:14px;color:var(--cream);font-weight:600;text-decoration:none;border-bottom:1px solid var(--aqua-deep);padding-bottom:2px;cursor:pointer}
+  .attach{font-size:12px;color:var(--cream-faint);font-style:italic;margin:16px 0 4px}
+  .decider{display:flex;gap:11px;align-items:flex-start;background:var(--tray);border-left:2px solid var(--aqua-deep);
+    padding:14px 16px;margin:18px 0 4px;border-radius:0 var(--r) var(--r) 0}
+  .decider .label{color:var(--aqua);margin-bottom:5px}
+  .decider p{font-size:13px;color:var(--cream-dim);line-height:1.5;margin:0}
+
+  .tray{background:var(--tray);padding:18px 22px 24px;border-top:1px solid var(--line-strong);margin-top:22px}
+  .tray .label{margin-bottom:13px}
+  .tray .btn{margin-bottom:10px}
+  .tray .btn:last-of-type{margin-bottom:0}
+  .traymicro{font-size:11.5px;color:var(--cream-faint);line-height:1.5;margin-top:14px;font-style:italic}
+
+  /* ===== MP SCREEN ===== */
+  .mphead{padding:54px 22px 20px;border-bottom:1px solid var(--line)}
+  .mprow{display:flex;gap:15px;align-items:center}
+  .mpphoto{width:58px;height:58px;border-radius:50%;flex:0 0 58px;
+    background:var(--ink-2);border:1px solid var(--line-strong);
+    display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:22px;color:var(--aqua-deep)}
+  .mprow h2{font-family:var(--disp);font-size:22px;line-height:1.1;letter-spacing:-.2px}
+  .mprow .sub{font-size:13px;color:var(--cream-dim);margin-top:4px}
+  .why{padding:18px 22px;border-bottom:1px solid var(--line)}
+  .why .label{margin-bottom:9px}
+  .why p{font-size:13.5px;color:var(--cream-dim);line-height:1.55}
+  .scorehd{padding:18px 22px 4px;display:flex;align-items:baseline;justify-content:space-between}
+  .scorehd .label{color:var(--cream-faint)}
+  .scorehd h3{font-family:var(--disp);font-size:18px}
+  .scorenote{font-size:11.5px;color:var(--cream-faint);font-style:italic;padding:0 22px 12px;line-height:1.45}
+  .vote{padding:15px 22px;border-bottom:1px solid var(--line);display:flex;gap:14px;align-items:flex-start}
+  .voteflag{font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:700;
+    padding:4px 8px;border-radius:3px;flex:0 0 auto;margin-top:2px}
+  .voteflag.for{background:rgba(169,204,199,.16);color:var(--aqua)}
+  .voteflag.against{background:rgba(217,138,130,.16);color:var(--danger)}
+  .voteflag.absent{background:rgba(232,224,205,.1);color:var(--cream-faint)}
+  .vote .vt{font-size:14px;line-height:1.4;margin-bottom:3px}
+  .vote .vd{font-size:11.5px;color:var(--cream-faint)}
+  .changepc{font-size:13px;color:var(--aqua);font-weight:600;padding:18px 22px;cursor:pointer}
+
+  /* ===== IMPACT ===== */
+  .imphead{padding:54px 22px 20px}
+  .imphead h1{font-family:var(--disp);font-size:28px;letter-spacing:-.3px}
+  .imphead p{font-size:13.5px;color:var(--cream-dim);margin-top:8px;line-height:1.5;font-style:italic}
+  .statgrid{display:flex;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .stat{flex:1;padding:20px;text-align:center;border-right:1px solid var(--line)}
+  .stat:last-child{border-right:none}
+  .stat .n{font-family:var(--disp);font-size:32px;color:var(--cream);line-height:1}
+  .stat .l{font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--cream-faint);margin-top:8px;font-weight:600}
+  .following{padding:20px 22px 6px}
+  .following .label{margin-bottom:14px}
+  .followrow{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-bottom:1px solid var(--line)}
+  .followrow .ic{flex:0 0 auto;margin-top:1px}
+  .followrow .ft{font-size:14px;line-height:1.35;margin-bottom:3px}
+  .followrow .fs{font-size:11.5px;color:var(--cream-faint)}
+  .resolved{color:var(--aqua)}
+  .ondevice{font-size:11px;color:var(--cream-faint);font-style:italic;text-align:center;padding:22px;line-height:1.5}
+
+  /* bottom nav */
+  .nav{flex:0 0 auto;display:flex;justify-content:space-around;align-items:center;
+    padding:10px 0 16px;border-top:1px solid var(--line);background:var(--ink)}
+  .nav button{display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--cream-faint);
+    font-size:9px;letter-spacing:.5px;text-transform:uppercase;font-weight:600;background:none;border:none;cursor:pointer;font-family:var(--text)}
+  .nav button.on{color:var(--aqua)}
+  .nav svg{width:22px;height:22px;display:block}
+
+  /* ===== BOTTOM SHEET (write / call) ===== */
+  .sheet-scrim{position:absolute;inset:0;background:rgba(3,10,7,.74);z-index:80;display:none}
+  .sheet-scrim.open{display:block}
+  .sheet{position:absolute;left:0;right:0;bottom:0;z-index:81;background:var(--ink-2);
+    border-radius:18px 18px 0 0;border-top:1px solid var(--line-strong);
+    transform:translateY(100%);transition:transform .26s cubic-bezier(.22,1,.36,1);
+    max-height:92%;display:flex;flex-direction:column}
+  .sheet.open{transform:translateY(0)}
+  .grab{width:38px;height:4px;border-radius:2px;background:var(--line-strong);margin:11px auto 0}
+  .sheethd{padding:14px 22px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+  .sheethd h3{font-family:var(--disp);font-size:19px}
+  .sheethd .close{font-size:13px;color:var(--cream-dim);cursor:pointer;font-weight:600}
+  .sheetbody{padding:18px 22px 22px;overflow-y:auto}
+  .sheetbody::-webkit-scrollbar{display:none}
+
+  .draftbox{width:100%;min-height:172px;background:var(--ink);border:1px solid var(--line-strong);
+    border-radius:var(--r);padding:14px;color:var(--cream);font-size:14px;line-height:1.55;
+    font-family:var(--text);resize:none}
+  .draftbox:focus{outline:none;border-color:var(--aqua-deep)}
+  .gatewrap{margin-top:14px}
+  .gatenote{display:flex;gap:9px;align-items:flex-start;font-size:12px;color:var(--cream-dim);
+    line-height:1.45;margin-bottom:14px}
+  .gatenote .dotmark{flex:0 0 auto;width:15px;height:15px;border-radius:50%;
+    border:1.5px solid var(--cream-faint);margin-top:1px;display:flex;align-items:center;justify-content:center;
+    font-size:9px;color:var(--cream-faint);transition:.2s}
+  .gatenote.done .dotmark{border-color:var(--aqua);background:var(--aqua);color:#07130D}
+  .gatenote.done{color:var(--cream-dim)}
+  .recipient{font-size:12px;color:var(--cream-faint);margin-bottom:14px;font-style:italic}
+
+  /* call sheet */
+  .expect{background:var(--tray);border-radius:var(--r);padding:14px 16px;margin-bottom:18px}
+  .expect .label{color:var(--aqua);margin-bottom:8px}
+  .expect p{font-size:12.5px;color:var(--cream-dim);line-height:1.5}
+  .scriptlbl{font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--cream-faint);font-weight:600;margin-bottom:12px}
+  .point{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line)}
+  .point .pn{font-family:var(--disp);font-size:15px;color:var(--aqua-deep);flex:0 0 18px}
+  .point p{font-size:13.5px;color:var(--cream);line-height:1.45}
+  .number{font-family:var(--disp);font-size:22px;color:var(--cream);text-align:center;margin:18px 0 4px;letter-spacing:.5px}
+  .didcall{display:flex;align-items:center;justify-content:center;gap:9px;font-size:13px;
+    color:var(--cream-dim);padding:14px;cursor:pointer;border:1px solid var(--line);border-radius:var(--r);margin-top:14px}
+  .didcall.on{color:var(--aqua);border-color:var(--aqua-deep)}
+  .didcall .tick{width:17px;height:17px;border-radius:50%;border:1.5px solid currentColor;
+    display:flex;align-items:center;justify-content:center;font-size:10px}
+  .didcall.on .tick{background:var(--aqua);border-color:var(--aqua);color:#07130D}
+
+  .toast{position:absolute;left:22px;right:22px;bottom:96px;z-index:90;background:var(--cream);color:#0B1A13;
+    border-radius:var(--r);padding:13px 16px;font-size:13px;text-align:center;font-weight:600;
+    opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none}
+  .toast.show{opacity:1;transform:translateY(0)}
+
+  .legend{max-width:640px;margin:46px auto 0;text-align:center;font-size:12.5px;color:var(--cream-faint);line-height:1.7}
+  .legend b{color:var(--cream-dim);font-weight:600}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="kick">Khidr · interactive prototype</div>
+  <h1 class="t">High-fidelity screens, tappable</h1>
+  <p class="lead">The wireframes built out in the real palette. Tap a feed story, open the action tray, write or call.</p>
+  <p class="hint">Try it: <b>set up</b> with any postcode &rarr; <b>Today</b> &rarr; tap a <b>feed</b> story &rarr; <b>Write</b> (the send button stays locked until you make the draft your own) or <b>Call</b>. Bottom nav switches Today / Feed / MP / Impact.</p>
+
+  <div class="device-wrap">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen-host">
+
+        <!-- ============ ONBOARDING ============ -->
+        <section class="screen active" id="s-onboarding">
+          <div class="ob">
+            <div class="obprog" id="obprog"></div>
+            <div class="obsteps">
+
+              <!-- 1 · welcome -->
+              <div class="obstep active">
+                <h2>Khidr.</h2>
+                <p class="sub">Know what's happening. Reach the one person who represents you.</p>
+                <p style="font-size:14px;color:var(--cream-dim);line-height:1.65">A calm, independent newsfeed of what affects our communities, with a simple way to tell your MP what you think.</p>
+                <p style="font-size:14px;color:var(--cream-dim);line-height:1.65;margin-top:12px">Free. No account. Nothing to sign up for.</p>
+              </div>
+
+              <!-- 2 · how it works -->
+              <div class="obstep">
+                <h2 style="font-size:27px">How it works</h2>
+                <div class="steprow" style="margin-top:22px"><div class="step-n">1</div><div><h4>Read what affects you</h4><p>A short daily brief and a fuller feed, written plainly. No jargon, no firehose.</p></div></div>
+                <div class="steprow"><div class="step-n">2</div><div><h4>Reach your MP</h4><p>Your MP is the one person who represents your area in Parliament. We route you straight to them.</p></div></div>
+                <div class="steprow"><div class="step-n">3</div><div><h4>You write it, you send it</h4><p>By email, WriteToThem, or a call. In your own words. That is what gets read.</p></div></div>
+              </div>
+
+              <!-- 3 · trust -->
+              <div class="obstep">
+                <h2 style="font-size:27px">What we never do</h2>
+                <div class="steprow" style="margin-top:22px"><div class="step-n">&middot;</div><div><h4>We never send for you</h4><p>Every message leaves from your own email or phone. We only open the door.</p></div></div>
+                <div class="steprow"><div class="step-n">&middot;</div><div><h4>No account, ever</h4><p>No sign-up, no login, no profile of you on any server.</p></div></div>
+                <div class="steprow"><div class="step-n">&middot;</div><div><h4>It stays on your phone</h4><p>Your postcode and your activity live on this device. Nothing is uploaded.</p></div></div>
+              </div>
+
+              <!-- 4 · postcode (collect) -->
+              <div class="obstep">
+                <h2 style="font-size:27px">Find your MP</h2>
+                <p class="sub" style="margin-bottom:20px">We use your postcode only to look up who represents you. It is stored on your phone and sent nowhere else.</p>
+                <div class="fieldlabel">Your postcode</div>
+                <input class="field" id="pc-input" placeholder="e.g. SW1A 1AA" autocomplete="off" />
+                <p class="microline">We will show you your MP on the next screens.</p>
+              </div>
+
+              <!-- 5 · topics (collect) -->
+              <div class="obstep">
+                <h2 style="font-size:27px">Pick your topics</h2>
+                <p class="sub" style="margin-bottom:20px">We will prioritise these in your feed. Optional, and you can change them anytime.</p>
+                <div class="chips" id="topic-chips">
+                  <div class="chip on">Gaza</div>
+                  <div class="chip">Sudan</div>
+                  <div class="chip">Kashmir</div>
+                  <div class="chip on">Civil rights</div>
+                  <div class="chip">Community safety</div>
+                </div>
+              </div>
+
+            </div>
+            <div class="obnav">
+              <button class="obback hidden" id="obback" onclick="obPrev()">Back</button>
+              <button class="btn solid" id="obnext" onclick="obNext()">Next</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ TODAY ============ -->
+        <section class="screen" id="s-today">
+          <div class="apphd">
+            <span class="word">Khidr.</span>
+            <span class="right" onclick="go('mp')">Your MP &rsaquo;</span>
+          </div>
+          <div class="strap">Today</div>
+          <div class="scrollbody">
+            <div class="priority">
+              <div class="label">Priority action · vote tomorrow</div>
+              <h3>Commons votes on conditions for UK arms-export licences</h3>
+              <button class="btn solid sm" onclick="openStory('arms')">Email your MP</button>
+            </div>
+            <div class="leadblk">
+              <div class="label dim">The lead</div>
+              <h2>UN inquiry documents torture of detainees</h2>
+              <p>An independent UN inquiry has published findings on the treatment of detainees, including accounts of torture. The report adds to pressure on governments over arms and trade ties.</p>
+              <span class="readlink" onclick="openStory('torture')">Read the full story &nearr;</span>
+            </div>
+            <div class="rule"></div>
+            <p class="calm">A calm daily read, not a firehose. We surface a handful of things well.</p>
+          </div>
+          <nav class="nav" id="nav-today"></nav>
+        </section>
+
+        <!-- ============ FEED ============ -->
+        <section class="screen" id="s-feed">
+          <div class="apphd"><span class="word" style="font-size:24px">Feed</span></div>
+          <div class="tabs" id="feed-tabs">
+            <button class="tab on">All</button>
+            <button class="tab">Gaza</button>
+            <button class="tab">Sudan</button>
+            <button class="tab">Civil rights</button>
+            <button class="tab">Kashmir</button>
+          </div>
+          <div class="scrollbody" id="feed-list"></div>
+          <nav class="nav" id="nav-feed"></nav>
+        </section>
+
+        <!-- ============ STORY DETAIL ============ -->
+        <section class="screen" id="s-story">
+          <span class="back" onclick="go('feed')">&lsaquo; Back</span>
+          <div class="scrollbody">
+            <div class="story">
+              <div class="label" id="story-topic">Gaza / human rights</div>
+              <h1 id="story-title">UN inquiry documents torture of detainees</h1>
+              <p id="story-blurb"></p>
+              <span class="readlink" id="story-link" onclick="readOriginal()">Read the original &nearr;</span>
+              <p class="attach" id="story-attach">Attached bill: tracked via the UK Bills API</p>
+
+              <div class="decider" id="story-decider">
+                <div>
+                  <div class="label">Your MP is on the relevant committee</div>
+                  <p id="decider-text"></p>
+                  <div class="prov">Derived from the attached bill and the Committees API</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tray">
+              <div class="label">Take action · contact your MP</div>
+              <button class="btn solid" onclick="openWrite()">Email your MP</button>
+              <button class="btn line" onclick="openWriteToThem()">Send via WriteToThem</button>
+              <button class="btn line" onclick="openCall()">Call their office</button>
+              <p class="traymicro">You write and send every message yourself. Khidr never sends on your behalf, and nothing is stored.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ MP ============ -->
+        <section class="screen" id="s-mp">
+          <span class="back" onclick="go('today')">&lsaquo; Back</span>
+          <div class="scrollbody">
+            <div class="mphead">
+              <div class="mprow">
+                <div class="mpphoto">RB</div>
+                <div>
+                  <h2>Rachel Blake</h2>
+                  <div class="sub">Labour (Co-op) · Cities of London and Westminster</div>
+                </div>
+              </div>
+            </div>
+            <div class="why">
+              <div class="label">Committees</div>
+              <p>Foreign Affairs Committee · Joint Committee on Human Rights</p>
+              <div class="prov">From UK Parliament data · Committees API</div>
+            </div>
+            <div class="scorehd"><div class="label">The record</div></div>
+            <p class="scorenote">A factual record of recorded votes, drawn straight from the public Commons Votes data. No verdict, no score, just what was cast.</p>
+
+            <div class="vote">
+              <span class="voteflag for">For</span>
+              <div><div class="vt">Conditions on arms-export licences</div><div class="vd">Division 142 · 14 May 2026</div></div>
+            </div>
+            <div class="vote">
+              <span class="voteflag against">Against</span>
+              <div><div class="vt">Restrictions on protest near places of worship</div><div class="vd">Division 119 · 2 Apr 2026</div></div>
+            </div>
+            <div class="vote">
+              <span class="voteflag absent">No vote</span>
+              <div><div class="vt">Recognition motion (non-binding)</div><div class="vd">Division 98 · 11 Mar 2026</div></div>
+            </div>
+            <div class="changepc" onclick="go('onboarding')">Change postcode &rsaquo;</div>
+          </div>
+          <nav class="nav" id="nav-mp"></nav>
+        </section>
+
+        <!-- ============ IMPACT ============ -->
+        <section class="screen" id="s-impact">
+          <div class="imphead">
+            <h1>Your activity</h1>
+            <p>Everything here lives on this phone only. Nothing is uploaded.</p>
+          </div>
+          <div class="scrollbody">
+            <div class="statgrid">
+              <div class="stat"><div class="n" id="stat-actions">3</div><div class="l">Actions taken</div></div>
+              <div class="stat"><div class="n" id="stat-following">2</div><div class="l">Following</div></div>
+              <div class="stat"><div class="n">1</div><div class="l">Resolved</div></div>
+            </div>
+            <div class="following">
+              <div class="label">Following</div>
+              <div class="followrow">
+                <span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(169,204,199,.85)" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+                <div><div class="ft">Arms-export licence conditions</div><div class="fs">Vote scheduled tomorrow · you'll get the outcome</div></div>
+              </div>
+              <div class="followrow">
+                <span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(169,204,199,.85)" stroke-width="1.6"><path d="M5 12l5 5L20 7"/></svg></span>
+                <div><div class="ft resolved">Protest restrictions bill</div><div class="fs resolved">Resolved 2 Apr · your MP voted Against</div></div>
+              </div>
+            </div>
+            <p class="ondevice">No account. No server-side history. If you change phones, this resets, by design.</p>
+          </div>
+          <nav class="nav" id="nav-impact"></nav>
+        </section>
+
+        <!-- ============ WRITE SHEET ============ -->
+        <div class="sheet-scrim" id="write-scrim" onclick="closeSheet('write')"></div>
+        <div class="sheet" id="write-sheet">
+          <div class="grab"></div>
+          <div class="sheethd"><h3 id="write-title">Email your MP</h3><span class="close" onclick="closeSheet('write')">Close</span></div>
+          <div class="sheetbody">
+            <div class="recipient" id="write-to">To: Rachel Blake · rachel.blake.mp@parliament.uk</div>
+            <div class="label" style="margin-bottom:10px">Your message · make it your own</div>
+            <textarea class="draftbox" id="draft" oninput="checkEdit()"></textarea>
+            <div class="gatewrap">
+              <div class="gatenote" id="gate"><span class="dotmark" id="gatemark"></span><span id="gatetext"></span></div>
+              <button class="btn solid" id="send-btn" disabled onclick="doSend()">Send from my email</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ CALL SHEET ============ -->
+        <div class="sheet-scrim" id="call-scrim" onclick="closeSheet('call')"></div>
+        <div class="sheet" id="call-sheet">
+          <div class="grab"></div>
+          <div class="sheethd"><h3>Call their office</h3><span class="close" onclick="closeSheet('call')">Close</span></div>
+          <div class="sheetbody">
+            <div class="expect">
+              <div class="label">What to expect</div>
+              <p>A staffer or an intern usually answers and notes your name, postcode and view. It takes a minute. After hours you can leave the same as a voicemail.</p>
+            </div>
+            <div class="scriptlbl">Points you might raise</div>
+            <div id="call-points"></div>
+            <div class="number" id="call-number">020 7219 6543</div>
+            <button class="btn solid" onclick="tapDial()">Tap to call</button>
+            <div class="didcall" id="didcall" onclick="toggleCalled()"><span class="tick" id="calltick"></span><span id="calltext">Mark as called</span></div>
+          </div>
+        </div>
+
+        <!-- ============ WRITETOTHEM HANDOFF ============ -->
+        <div class="sheet-scrim" id="wtt-scrim" onclick="closeSheet('wtt')"></div>
+        <div class="sheet" id="wtt-sheet">
+          <div class="grab"></div>
+          <div class="sheethd"><h3>Send via WriteToThem</h3><span class="close" onclick="closeSheet('wtt')">Close</span></div>
+          <div class="sheetbody">
+            <p style="font-size:13.5px;color:var(--cream-dim);line-height:1.6;margin-bottom:16px">WriteToThem is a trusted, independent service that delivers your message to your MP. You write and send it there, in your own words.</p>
+            <div class="expect" style="margin-bottom:18px">
+              <div class="label">Why we hand off, not type here</div>
+              <p>We never send on your behalf. WriteToThem handles delivery, confirms it reached your MP, and blocks identical mass messages, so a personal note gets through.</p>
+            </div>
+            <button class="btn solid" onclick="openWTTSite()">Open WriteToThem ↗</button>
+            <button class="btn line" style="margin-top:10px" onclick="copyStarter()">Copy a starting point to paste</button>
+          </div>
+        </div>
+
+        <div class="toast" id="toast"></div>
+
+      </div><!-- /screen-host -->
+    </div><!-- /phone -->
+  </div>
+
+  <p class="legend"><b>Notes.</b> Palette, type and 5px corners match the locked system. No AI: you write from a light scaffold, and the send button stays disabled until you make it your own (a nudge to personal messages, visible in the UI). The MP record is factual-only (no score, no verdict), keeping the platform posture clean. Smooth crossfade between screens; sheets slide up. Demo MP is the real, verified member for the demo postcode.</p>
+</div>
+
+<script>
+/* ---------- data ---------- */
+const STORIES = {
+  arms: {
+    topic:"Foreign policy / human rights",
+    title:"MPs to vote on conditions for UK arms-export licences",
+    blurb:"The Commons is due to vote on whether to attach human-rights conditions to UK arms export licences, following reports of civilian harm. Campaigners say licensing has continued despite the reports; the government says each licence is assessed against existing criteria. The vote shapes the pressure ministers feel on the issue.",
+    source:"Example Publisher", attach:"Attached bill: tracked via the UK Bills API",
+    decider:"A member of the Foreign Affairs Committee, which is handling the attached bill.",
+    points:[
+      "Ask where your MP stands on attaching conditions to export licences",
+      "Raise the civilian-harm reports campaigners have cited",
+      "Ask whether your MP will speak or intervene in the debate"
+    ],
+    context:"the Commons vote on attaching human-rights conditions to UK arms export licences"
+  },
+  torture: {
+    topic:"Gaza / human rights",
+    title:"UN inquiry documents torture of detainees",
+    blurb:"An independent UN inquiry has published findings on the treatment of detainees, including accounts of torture. The report adds to pressure on governments over arms and trade ties, and several MPs have called for a formal response.",
+    source:"Example Publisher", attach:"Related debate: tracked via the UK Bills API",
+    decider:"A member of the Joint Committee on Human Rights, which is examining this.",
+    points:[
+      "Ask whether your MP has read the inquiry's findings",
+      "Ask what response your MP will press the government for",
+      "Raise the connection to existing UK trade and arms ties"
+    ],
+    context:"the UN inquiry documenting torture of detainees and the UK's response"
+  },
+  mosque: {
+    topic:"Community safety",
+    title:"Council weighs funding for incident reporting after rise at local mosques",
+    blurb:"Following a reported rise in vandalism and threats at local mosques, a council is weighing a budget line for a community-safety reporting scheme. Supporters say it would speed response and improve data; some residents have questions about how the data would be used. A decision is expected next month.",
+    source:"Example Local News", attach:"",
+    decider:"",
+    points:[
+      "Ask your MP's view on supporting community-safety funding locally",
+      "Raise support for, or questions about, how incident data would be handled"
+    ],
+    context:"the council's proposed community-safety reporting scheme after incidents at local mosques"
+  },
+  sudan: {
+    topic:"Sudan",
+    title:"Aid convoys blocked as famine conditions spread",
+    blurb:"Humanitarian agencies report that aid convoys are being blocked from reaching areas now facing famine conditions. UK ministers have faced questions in the Commons over funding levels and diplomatic pressure.",
+    source:"Example Publisher", attach:"",
+    decider:"",
+    points:[
+      "Ask what the UK is doing to press for humanitarian access",
+      "Ask about current UK aid funding levels for the region"
+    ],
+    context:"blocked aid convoys and spreading famine conditions in Sudan"
+  }
+};
+
+const FEED = [
+  {id:"torture", topic:"Gaza / human rights", title:"UN inquiry documents torture of detainees", acts:["Email","Call"]},
+  {id:"sudan", topic:"Sudan", title:"Aid convoys blocked as famine conditions spread", acts:["Email"]},
+  {id:"arms", topic:"Foreign policy", title:"MPs to vote on conditions for UK arms-export licences", acts:["Email","Call"]},
+  {id:"mosque", topic:"Community safety", title:"Council weighs funding for incident reporting at local mosques", acts:["Email"]}
+];
+
+/* ---------- nav icons ---------- */
+const ICONS = {
+  today:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg>',
+  feed:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
+  mp:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg>',
+  impact:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>'
+};
+const NAV_ITEMS = [["today","Today"],["feed","Feed"],["mp","MP"],["impact","Impact"]];
+function buildNav(hostId, current){
+  const host = document.getElementById(hostId);
+  host.innerHTML = "";
+  NAV_ITEMS.forEach(([key,label])=>{
+    const b = document.createElement("button");
+    if(key===current) b.className="on";
+    b.innerHTML = ICONS[key] + "<span>"+label+"</span>";
+    b.onclick = ()=>go(key);
+    host.appendChild(b);
+  });
+}
+["today","feed","mp","impact"].forEach(k=>buildNav("nav-"+k,k));
+
+/* ---------- screen switching (crossfade via CSS) ---------- */
+function go(name){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  const el = document.getElementById("s-"+name);
+  el.classList.add("active");
+  const host = el.querySelector(".scrollbody, .grow");
+  if(host) host.scrollTop = 0;
+}
+
+/* ---------- feed render ---------- */
+function renderFeed(){
+  const list=document.getElementById("feed-list");
+  list.innerHTML="";
+  FEED.forEach(item=>{
+    const row=document.createElement("div");
+    row.className="storyrow";
+    row.onclick=()=>openStory(item.id);
+    const acts=item.acts.map((a,i)=>`<span class="inline-act ${i>0?'ghost':''}">${a}</span>`).join('<span class="dot"></span>');
+    row.innerHTML=`<div class="label">${item.topic}</div><h3>${item.title}</h3><div class="meta">${acts}</div>`;
+    list.appendChild(row);
+  });
+}
+renderFeed();
+document.querySelectorAll("#feed-tabs .tab").forEach(t=>{
+  t.onclick=()=>{document.querySelectorAll("#feed-tabs .tab").forEach(x=>x.classList.remove("on"));t.classList.add("on");};
+});
+
+/* ---------- story detail ---------- */
+let currentStory="torture";
+function openStory(id){
+  currentStory=id;
+  const s=STORIES[id];
+  document.getElementById("story-topic").textContent=s.topic;
+  document.getElementById("story-title").textContent=s.title;
+  document.getElementById("story-blurb").textContent=s.blurb;
+  document.getElementById("story-link").textContent="Read the original, "+s.source+" ↗";
+  const attach=document.getElementById("story-attach");
+  attach.style.display=s.attach?"block":"none"; attach.textContent=s.attach;
+  const dec=document.getElementById("story-decider");
+  if(s.decider){dec.style.display="flex";document.getElementById("decider-text").textContent=s.decider;}
+  else dec.style.display="none";
+  go("story");
+}
+function readOriginal(){ showToast("Opens the original article in-app"); }
+
+/* ---------- write sheet ---------- */
+let baseDraft="";
+function makeDraft(s){
+  return "Dear Rachel Blake,\n\nI am a constituent in Cities of London and Westminster. I am writing about "+s.context+".\n\n[Add a line here in your own words: why this matters to you.]\n\nI would be grateful to know your position.\n\nYours sincerely,\n[Your name]";
+}
+function openWrite(){
+  const s=STORIES[currentStory];
+  document.getElementById("write-title").textContent="Email your MP";
+  document.getElementById("write-to").textContent="To: Rachel Blake · rachel.blake.mp@parliament.uk";
+  baseDraft=makeDraft(s);
+  const d=document.getElementById("draft");
+  d.value=baseDraft;
+  resetGate();
+  openSheet("write");
+}
+/* WriteToThem is a handoff, not an in-app composer: you write and send on their
+   site (which carries the message and enforces no-mass-identical). No typing box. */
+function openWriteToThem(){ openSheet("wtt"); }
+function openWTTSite(){ closeSheet("wtt"); showToast("Opening WriteToThem in your browser"); }
+function copyStarter(){ showToast("Starting point copied, paste it into WriteToThem"); }
+const GATE_PROMPT="Make it your own. Add a line in your own words to unlock sending. A message in your own voice lands as a real person; identical ones get filtered.";
+function resetGate(){
+  const btn=document.getElementById("send-btn");
+  btn.disabled=true;
+  document.getElementById("gate").classList.remove("done");
+  document.getElementById("gatemark").textContent="";
+  document.getElementById("gatetext").textContent=GATE_PROMPT;
+}
+function checkEdit(){
+  const d=document.getElementById("draft").value;
+  const edited = d.trim()!==baseDraft.trim() && !d.includes("[Add a line here") && d.trim().length>40;
+  const btn=document.getElementById("send-btn");
+  const gate=document.getElementById("gate");
+  if(edited){
+    btn.disabled=false;
+    gate.classList.add("done");
+    document.getElementById("gatemark").textContent="✓";
+    document.getElementById("gatetext").textContent="This reads as your own. It will land as an individual constituent message.";
+  } else {
+    btn.disabled=true;
+    gate.classList.remove("done");
+    document.getElementById("gatemark").textContent="";
+    document.getElementById("gatetext").textContent=GATE_PROMPT;
+  }
+}
+function doSend(){closeSheet("write");showToast("Opening your mail app, you send it");}
+
+/* ---------- call sheet ---------- */
+function openCall(){
+  const s=STORIES[currentStory];
+  const host=document.getElementById("call-points");
+  host.innerHTML="";
+  s.points.forEach((p,i)=>{
+    const el=document.createElement("div");
+    el.className="point";
+    el.innerHTML=`<span class="pn">${i+1}</span><p>${p}</p>`;
+    host.appendChild(el);
+  });
+  const dc=document.getElementById("didcall");
+  dc.classList.remove("on");
+  document.getElementById("calltick").textContent="";
+  document.getElementById("calltext").textContent="Mark as called";
+  openSheet("call");
+}
+function tapDial(){showToast("Dialling 020 7219 6543");}
+function toggleCalled(){
+  const dc=document.getElementById("didcall");
+  dc.classList.toggle("on");
+  const on=dc.classList.contains("on");
+  document.getElementById("calltick").textContent=on?"✓":"";
+  document.getElementById("calltext").textContent=on?"Logged on this phone":"Mark as called";
+}
+
+/* ---------- sheet mechanics ---------- */
+function openSheet(name){
+  document.getElementById(name+"-scrim").classList.add("open");
+  requestAnimationFrame(()=>document.getElementById(name+"-sheet").classList.add("open"));
+}
+function closeSheet(name){
+  document.getElementById(name+"-sheet").classList.remove("open");
+  document.getElementById(name+"-scrim").classList.remove("open");
+}
+
+/* ---------- toast ---------- */
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg;t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove("show"),2200);
+}
+
+/* topic chips on onboarding */
+document.querySelectorAll("#topic-chips .chip").forEach(c=>{
+  c.onclick=()=>c.classList.toggle("on");
+});
+
+/* ---------- onboarding stepper (5 steps, teach then collect) ---------- */
+let obStep=0;
+const OB_STEPS=document.querySelectorAll("#s-onboarding .obstep");
+const OB_TOTAL=OB_STEPS.length;
+document.getElementById("obprog").innerHTML=Array.from({length:OB_TOTAL},()=>"<span></span>").join("");
+function obRender(){
+  OB_STEPS.forEach((s,i)=>s.classList.toggle("active",i===obStep));
+  document.querySelectorAll("#obprog span").forEach((s,i)=>s.classList.toggle("on",i<=obStep));
+  document.getElementById("obback").classList.toggle("hidden",obStep===0);
+  document.getElementById("obnext").textContent = obStep===OB_TOTAL-1 ? "Enter Khidr" : "Next";
+}
+function obNext(){ if(obStep<OB_TOTAL-1){obStep++;obRender();} else { go("today"); } }
+function obPrev(){ if(obStep>0){obStep--;obRender();} }
+obRender();
+</script>
+</body>
+</html>

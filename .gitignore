@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+**/node_modules/
+
+# env / secrets — never commit
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# next.js
+backend/.next/
+backend/out/
+backend/.vercel/
+
+# expo / react native
+mobile/.expo/
+mobile/dist/
+mobile/web-build/
+**/expo-env.d.ts
+
+# build / cache
+*.log
+.DS_Store
+*.tsbuildinfo
+.turbo/
+
+# editor
+.idea/
+.vscode/

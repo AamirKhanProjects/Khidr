@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Khidr — Design v4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* flat, near-black green. no gradients anywhere. */
+    --ink:#07130D;          /* base */
+    --ink-2:#0B1A13;        /* lifted surface (flat) */
+    --tray:#0E2218;         /* action zone (flat) */
+    --emerald:#1F8060;      /* used very sparingly */
+    --cream:#E8E0CD;        /* text */
+    --cream-dim:rgba(232,224,205,.56);
+    --cream-faint:rgba(232,224,205,.30);
+    --aqua:#A9CCC7;         /* primary action + active */
+    --aqua-deep:#7FB3AC;
+    --line:rgba(232,224,205,.12);
+    --line-strong:rgba(232,224,205,.24);
+    --r:5px;
+    --disp:"Libre Caslon Display",Georgia,serif;
+    --text:"Source Serif 4",Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--text);color:var(--cream);background:var(--ink);-webkit-font-smoothing:antialiased;padding:50px 40px 100px}
+  .wrap{max-width:1500px;margin:0 auto}
+  .kick{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--aqua);font-weight:600;margin-bottom:12px}
+  h1.t{font-family:var(--disp);font-size:50px;letter-spacing:-.5px;line-height:.95}
+  .lead{font-size:17px;color:var(--cream-dim);max-width:680px;line-height:1.5;margin:16px 0 10px;font-style:italic}
+  .changes{font-size:13.5px;color:var(--cream-dim);line-height:1.7;margin:18px 0 46px}
+  .changes b{color:var(--cream);font-weight:600}
+
+  .phones{display:flex;gap:30px;flex-wrap:wrap;align-items:flex-start}
+  .pc{display:flex;flex-direction:column;gap:13px;width:300px}
+  .plabel{font-size:12px;letter-spacing:1.3px;text-transform:uppercase;color:var(--cream-dim);font-weight:600}
+  .plabel small{display:block;text-transform:none;letter-spacing:0;color:var(--cream-faint);font-weight:400;margin-top:4px;font-size:12px;line-height:1.4}
+  .phone{width:300px;height:642px;background:var(--ink);border-radius:42px;border:9px solid #03100A;overflow:hidden;position:relative}
+  .nch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:104px;height:22px;background:#03100A;border-radius:0 0 13px 13px;z-index:6}
+  .scr{position:absolute;inset:0;overflow:hidden;display:flex;flex-direction:column}
+  .body{flex:1;overflow-y:auto}
+  .body::-webkit-scrollbar{display:none}
+
+  /* generic */
+  .pad{padding:0 20px}
+  .word{font-family:var(--disp);font-size:30px;letter-spacing:-.3px}
+  .h-serif{font-family:var(--disp);line-height:1.16}
+  .src{font-size:12px;color:var(--cream-dim);font-style:italic}
+  .rule{height:1px;background:var(--line);margin:16px 0}
+  .bar{height:7px;background:rgba(232,224,205,.14);border-radius:2px;margin-bottom:8px}
+  .bar.s{width:55%}.bar.xs{width:34%}
+  .label{font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--aqua);font-weight:600}
+  .muted{color:var(--cream-dim)}
+
+  .btn{display:block;text-align:center;border-radius:var(--r);font-weight:600;letter-spacing:.2px}
+  .btn.solid{background:var(--aqua);color:#07130D;padding:14px;font-size:15px}
+  .btn.line{border:1px solid var(--line-strong);color:var(--cream);padding:13px;font-size:15px}
+  .btn.sm{padding:11px;font-size:13.5px}
+
+  /* onboarding bits */
+  .ob{padding:64px 26px 26px;display:flex;flex-direction:column;height:100%}
+  .ob .grow{flex:1}
+  .step-n{font-family:var(--disp);font-size:22px;color:var(--aqua);width:34px;flex:0 0 34px}
+  .steprow{display:flex;gap:14px;margin-bottom:20px;align-items:baseline}
+  .steprow h4{font-size:16px;font-weight:600;margin-bottom:3px}
+  .steprow p{font-size:13px;color:var(--cream-dim);line-height:1.45}
+  .field{border:1px solid var(--line-strong);border-radius:var(--r);padding:14px;color:var(--cream-faint);font-size:14px;margin-bottom:18px}
+  .topic{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}
+  .box{width:20px;height:20px;border:1.5px solid var(--line-strong);border-radius:3px;flex:0 0 20px}
+  .box.on{background:var(--aqua);border-color:var(--aqua);position:relative}
+  .box.on::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#07130D;font-size:13px;font-weight:700}
+  .topic span{font-size:15px}
+
+  /* app header + nav */
+  .apphd{padding:50px 20px 15px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+  .apphd .navlink{font-size:13px;color:var(--aqua);font-weight:600}
+  .strap{font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--cream-faint);font-weight:600;padding:10px 20px 0}
+  .nav{flex:0 0 auto;display:flex;justify-content:space-around;align-items:center;padding:9px 0 13px;border-top:1px solid var(--line);background:var(--ink)}
+  .nav a{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--cream-faint);font-size:9.5px;letter-spacing:.4px;text-transform:uppercase;font-weight:600}
+  .nav a.on{color:var(--aqua)}
+  .nav svg{width:23px;height:23px}
+
+  /* feed topic selector: underline tabs, no pills */
+  .seltabs{display:flex;gap:20px;padding:13px 20px 0;border-bottom:1px solid var(--line);overflow-x:auto}
+  .seltabs::-webkit-scrollbar{display:none}
+  .seltabs a{font-size:13.5px;color:var(--cream-dim);padding-bottom:11px;white-space:nowrap;font-weight:600;border-bottom:2px solid transparent}
+  .seltabs a.on{color:var(--cream);border-bottom-color:var(--aqua)}
+  .storyrow{padding:18px 20px;border-bottom:1px solid var(--line)}
+  .flatbtn{font-size:13.5px;font-weight:600;color:var(--aqua)}
+  .flatbtn.ghost{color:var(--cream-dim)}
+
+  /* today */
+  .priority{background:var(--tray);padding:16px 20px;border-bottom:1px solid var(--line)}
+  .lead-blk{padding:18px 20px}
+
+  /* tray */
+  .tray{background:var(--tray);padding:18px 20px 22px;border-top:1px solid var(--line-strong)}
+  .micro{font-size:11.5px;color:var(--cream-faint);line-height:1.5;margin-top:13px;font-style:italic}
+
+  /* coachmark */
+  .dim{position:absolute;inset:0;background:rgba(3,10,7,.78);z-index:7}
+  .tip{position:absolute;z-index:8;left:18px;right:18px;background:var(--cream);color:#0B1A13;border-radius:10px;padding:16px}
+  .tip h5{font-family:var(--disp);font-size:18px;margin-bottom:5px}
+  .tip p{font-size:13px;line-height:1.45;color:#33433c}
+  .tip .row{display:flex;justify-content:space-between;align-items:center;margin-top:13px}
+  .tip .prog{font-size:11px;color:#6b7a72;letter-spacing:1px;font-weight:600}
+  .tip .nx{background:#0B1A13;color:var(--cream);font-size:12px;font-weight:600;padding:8px 16px;border-radius:5px}
+  .spot{position:absolute;z-index:8;left:14px;right:14px;height:54px;border:2px solid var(--aqua);border-radius:9px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kick">Design v4 · de-vibecoded</div>
+  <h1 class="t">Flat, very dark, no pills or dots</h1>
+  <p class="lead">The look stripped back to something more premium, plus the onboarding flow and bottom-nav icons.</p>
+  <div class="changes">
+    <b>Removed:</b> all gradients (flat fills only), every pill shape, the decorative emerald dots, the middot separators between words.<br>
+    <b>Changed:</b> background is now near-black green; the wordmark is clean; topic selection uses checkboxes not pills; the feed filter uses underlined text not pills.<br>
+    <b>Added:</b> a bottom navigation with clear labelled icons (Today, Feed, Reps, Impact), a 3-step onboarding, and a short coachmark tutorial.
+  </div>
+
+  <div class="phones">
+
+    <!-- 1. Mission -->
+    <div class="pc">
+      <div class="plabel">Onboarding 1<small>Mission &amp; who we are</small></div>
+      <div class="phone"><div class="nch"></div><div class="scr"><div class="ob">
+        <div class="word" style="font-size:40px">Khidr</div>
+        <div class="h-serif" style="font-size:27px;margin:18px 0 16px">Know what's happening. Reach the one person who represents you.</div>
+        <p style="font-size:14px;color:var(--cream-dim);line-height:1.6">Independent and nonprofit. We never send messages for you, and we never sell your data.</p>
+        <div class="grow"></div>
+        <a class="btn solid">Get started</a>
+      </div></div></div>
+    </div>
+
+    <!-- 2. How it works -->
+    <div class="pc">
+      <div class="plabel">Onboarding 2<small>How it works</small></div>
+      <div class="phone"><div class="nch"></div><div class="scr"><div class="ob">
+        <div class="h-serif" style="font-size:26px;margin-bottom:26px">How Khidr works</div>
+        <div class="steprow"><div class="step-n">1</div><div><h4>Read what matters</h4><p>A short, curated brief of the stories affecting our communities.</p></div></div>
+        <div class="steprow"><div class="step-n">2</div><div><h4>Reach your own reps</h4><p>Call or write the people who actually answer to you, matched to your address.</p></div></div>
+        <div class="steprow"><div class="step-n">3</div><div><h4>You send it</h4><p>Khidr opens your phone, your email, or the office form. You send every message yourself.</p></div></div>
+        <div class="grow"></div>
+        <a class="btn solid">Continue</a>
+      </div></div></div>
+    </div>
+
+    <!-- 3. Setup -->
+    <div class="pc">
+      <div class="plabel">Onboarding 3<small>Setup: address + topics</small></div>
+      <div class="phone"><div class="nch"></div><div class="scr"><div class="ob">
+        <div class="h-serif" style="font-size:26px;margin-bottom:8px">Set up</div>
+        <p style="font-size:13px;color:var(--cream-dim);margin-bottom:18px">Your address finds your reps. It stays on your device.</p>
+        <div class="field">ZIP code or address</div>
+        <div class="label" style="margin-bottom:4px">Topics you care about</div>
+        <div class="topic"><div class="box on"></div><span>Gaza</span></div>
+        <div class="topic"><div class="box on"></div><span>Sudan</span></div>
+        <div class="topic"><div class="box"></div><span>Kashmir</span></div>
+        <div class="topic"><div class="box"></div><span>Domestic civil rights</span></div>
+        <div class="grow"></div>
+        <a class="btn solid">Find my representatives</a>
+      </div></div></div>
+    </div>
+
+    <!-- 4. Today -->
+    <div class="pc">
+      <div class="plabel">Today<small>Home digest + bottom nav</small></div>
+      <div class="phone"><div class="nch"></div><div class="scr">
+        <div class="apphd"><span class="word">Khidr</span><span class="navlink">Your reps</span></div>
+        <div class="strap">Today</div>
+        <div class="body">
+          <div class="priority">
+            <div class="label">Vote tomorrow</div>
+            <div class="h-serif" style="font-size:18px;margin:7px 0 12px">Senate votes on conditions for military aid</div>
+            <a class="btn solid sm" style="display:inline-block;padding:10px 18px">Call your senator</a>
+          </div>
+          <div class="lead-blk">
+            <div class="label">The lead</div>
+            <div class="h-serif" style="font-size:21px;margin:8px 0 10px">UN inquiry documents torture of detainees</div>
+            <div class="src" style="margin-bottom:11px">An independent UN commission</div>
+            <div class="bar"></div><div class="bar"></div><div class="bar s"></div>
+            <div class="rule"></div>
+            <div class="label" style="color:var(--cream-faint)">Also today</div>
+            <div class="h-serif" style="font-size:16px;margin-top:8px">Aid convoys blocked as famine spreads in Sudan</div>
+          </div>
+        </div>
+        <div class="nav">
+          <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 18h18M6.5 18a5.5 5.5 0 0 1 11 0M12 3.5V6M5 9l1.6 1.6M19 9l-1.6 1.6"/></svg>Today</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M4 12h16M4 18h11"/></svg>Feed</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M16.5 6.6a3 3 0 0 1 0 5.6M20.5 19a5.5 5.5 0 0 0-3.7-5.2"/></svg>Reps</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20h16M6 20v-7M12 20V5M18 20v-10"/></svg>Impact</a>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- Feed with selector -->
+    <div class="pc">
+      <div class="plabel">Feed<small>full list + topic selector</small></div>
+      <div class="phone"><div class="nch"></div><div class="scr">
+        <div class="apphd" style="padding-bottom:0;border:none"><span class="word">Feed</span></div>
+        <div class="seltabs">
+          <a class="on">All</a><a>Gaza</a><a>Sudan</a><a>Kashmir</a><a>Civil rights</a>
+        </div>
+        <div class="body">
+          <div class="storyrow">
+            <div class="label">Gaza / Human rights</div>
+            <div class="h-serif" style="font-size:19px;margin:7px 0 8px">UN inquiry documents torture of detainees</div>
+            <div class="src" style="margin-bottom:12px">An independent UN commission</div>
+            <div style="display:flex;gap:20px"><a class="flatbtn">Call your senator</a><a class="flatbtn ghost">Write</a></div>
+          </div>
+          <div class="storyrow">
+            <div class="label">Sudan</div>
+            <div class="h-serif" style="font-size:19px;margin:7px 0 8px">Aid convoys blocked as famine spreads</div>
+            <div class="src" style="margin-bottom:12px">Multiple humanitarian agencies</div>
+            <div style="display:flex;gap:20px"><a class="flatbtn">Call your rep</a><a class="flatbtn ghost">Write</a></div>
+          </div>
+          <div class="storyrow" style="border:none">
+            <div class="label">Kashmir</div>
+            <div class="h-serif" style="font-size:19px;margin:7px 0 8px">Communications restrictions enter second month</div>
+            <div class="src">Press freedom monitors</div>
+          </div>
+        </div>
+        <div class="nav">
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 18h18M6.5 18a5.5 5.5 0 0 1 11 0M12 3.5V6M5 9l1.6 1.6M19 9l-1.6 1.6"/></svg>Today</a>
+          <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M4 12h16M4 18h11"/></svg>Feed</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M16.5 6.6a3 3 0 0 1 0 5.6M20.5 19a5.5 5.5 0 0 0-3.7-5.2"/></svg>Reps</a>
+          <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20h16M6 20v-7M12 20V5M18 20v-10"/></svg>Impact</a>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 5. Story & action -->
+    <div class="pc">
+      <div class="plabel">Story &amp; action<small>three modes, you send</small></div>
+      <div class="phone"><div class="nch"></div><div class="scr">
+        <div class="apphd" style="border:none;padding-bottom:0"><span style="font-size:20px;color:var(--cream-dim)">‹</span><span class="word" style="font-size:22px">Khidr</span><span style="width:10px"></span></div>
+        <div class="body">
+          <div class="pad" style="padding-top:14px">
+            <div class="label">Gaza / Human rights</div>
+            <div class="h-serif" style="font-size:25px;margin:11px 0 11px">UN inquiry documents torture of detainees</div>
+            <div class="src" style="margin-bottom:15px">An independent UN commission</div>
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar s"></div>
+            <div style="font-size:13px;color:var(--aqua);border-bottom:1px solid var(--aqua-deep);display:inline-block;margin:14px 0 4px">Read the full report ↗</div>
+            <div style="font-size:11px;color:var(--cream-faint);margin-bottom:6px">Bill: S.1234 (Congress.gov)</div>
+          </div>
+          <div class="tray">
+            <div class="label">Take action</div>
+            <p style="font-size:11px;color:var(--cream-faint);margin:3px 0 13px">One office at a time.</p>
+            <a class="btn solid" style="margin-bottom:10px">Call your senator</a>
+            <a class="btn line" style="margin-bottom:10px">Email from your own app</a>
+            <a class="btn line">Open their contact form</a>
+            <div class="micro">Khidr never sends. It opens your phone, your email, or the official's own form, and you send it yourself.</div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 6. Coachmark -->
+    <div class="pc">
+      <div class="plabel">Tutorial<small>quick coachmarks on first use</small></div>
+      <div class="phone"><div class="nch"></div><div class="scr">
+        <div class="apphd"><span class="word">Khidr</span><span class="navlink">Your reps</span></div>
+        <div class="strap">Today</div>
+        <div class="body">
+          <div class="priority">
+            <div class="label">Vote tomorrow</div>
+            <div class="h-serif" style="font-size:18px;margin:7px 0 12px">Senate votes on conditions for military aid</div>
+            <a class="btn solid sm" style="display:inline-block;padding:10px 18px">Call your senator</a>
+          </div>
+        </div>
+        <div class="dim"></div>
+        <div class="spot" style="top:150px"></div>
+        <div class="tip" style="top:218px">
+          <h5>Calling is the strongest move</h5>
+          <p>Tap here and Khidr dials your own representative. Offices count every call, so this is where you carry the most weight.</p>
+          <div class="row"><span class="prog">1 of 3</span><span class="nx">Next</span></div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
