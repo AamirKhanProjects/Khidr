@@ -1,93 +1,108 @@
-import { useState } from "react";
-import { Alert, Linking, ScrollView, StyleSheet, Text, Pressable, View } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
+import { View, ScrollView, Pressable, StyleSheet, Linking, Alert } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { router, useLocalSearchParams } from "expo-router";
 import { theme } from "@/theme";
+import { Disp, Body, Kicker, PrimaryButton } from "@/components/ui";
+import { fetchFeed } from "@/services/api";
+import { getRep, logAction } from "@/store/local";
 import type { FeedItem, Rep } from "@/types";
-import feed from "@/data/sample-feed.json";
-import { RepPicker } from "@/components/RepPicker";
-import { Pulse } from "@/components/Motion";
 
-export default function CallAction() {
+export default function Call() {
   const { item: itemId } = useLocalSearchParams<{ item: string }>();
-  const item = (feed as FeedItem[]).find((i) => i.id === itemId);
-  const [rep, setRep] = useState<Rep | undefined>();
+  const [item, setItem] = useState<FeedItem | null>(null);
+  const [rep, setRep] = useState<Rep | null>(null);
   const [called, setCalled] = useState(false);
 
-  const next = `/action/call?item=${itemId}`;
+  useEffect(() => {
+    (async () => {
+      const data = await fetchFeed();
+      setItem([data.lead, ...data.items].find((i) => i && i.id === itemId) ?? null);
+      setRep(await getRep());
+    })();
+  }, [itemId]);
+
+  const phone = rep?.phones?.[0] ?? null;
 
   function dial() {
-    const phone = rep?.phones[0];
-    if (!phone) return;
-    Linking.openURL(`tel:${phone}`).catch(() =>
-      Alert.alert("Couldn't open the dialer", phone)
-    );
+    if (!phone) {
+      Alert.alert("No phone number", "We don't have an office number for your MP.");
+      return;
+    }
+    Linking.openURL(`tel:${phone}`).catch(() => Alert.alert("Couldn't open the dialer", phone));
   }
 
+  const points = item?.callPoints?.length
+    ? item.callPoints
+    : ["Ask where your MP stands on this", "Say briefly why it matters to you", "Ask them to act or speak on it"];
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {item ? <Text style={styles.story}>{item.headline}</Text> : null}
+    <SafeAreaView style={s.safe}>
+      <View style={s.head}>
+        <Pressable onPress={() => router.back()} accessibilityRole="button">
+          <Body style={{ color: theme.colors.creamDim, fontFamily: theme.font.bodySemi }}>Close</Body>
+        </Pressable>
+        <Disp style={{ fontSize: 19 }}>Call their office</Disp>
+        <View style={{ width: 40 }} />
+      </View>
+      <ScrollView contentContainerStyle={{ padding: 22 }}>
+        {rep ? (
+          <Body style={s.mp}>
+            {rep.name}
+            {rep.constituency ? ` · ${rep.constituency}` : ""}
+          </Body>
+        ) : null}
 
-      <RepPicker selectedId={rep?.id} onSelect={setRep} next={next} />
-
-      {item?.callPoints?.length ? (
-        <View style={styles.scriptBox}>
-          <Text style={styles.scriptTitle}>Points you might raise</Text>
-          <Text style={styles.scriptIntro}>
-            "Hi, my name is ___ and I'm a constituent. I'm calling about{" "}
-            {item.headline.toLowerCase()}."
-          </Text>
-          {item.callPoints.map((p, i) => (
-            <Text key={i} style={styles.point}>
-              • {p}
-            </Text>
-          ))}
-          <Text style={styles.scriptOutro}>
-            Be brief and polite. Ask them to share the member's position. Thank
-            them for their time.
-          </Text>
+        <View style={s.expect}>
+          <Kicker>What to expect</Kicker>
+          <Body style={s.expectP}>
+            A staffer usually answers and notes your name, postcode and view. It takes a minute. After hours you can leave the same as a voicemail.
+          </Body>
         </View>
-      ) : null}
 
-      <Pressable style={[styles.btn, !rep && styles.btnDisabled]} disabled={!rep} onPress={dial}>
-        <Text style={styles.btnText}>
-          {rep ? `Call ${rep.name}` : "Select a representative"}
-        </Text>
-      </Pressable>
+        <Kicker color={theme.colors.creamFaint}>Points you might raise</Kicker>
+        <View style={{ marginTop: 10 }}>
+          {points.map((p, i) => (
+            <View key={i} style={s.point}>
+              <Disp style={s.pn}>{i + 1}</Disp>
+              <Body style={s.pp}>{p}</Body>
+            </View>
+          ))}
+        </View>
 
-      <Pressable
-        style={[styles.logBtn, called && styles.logDone]}
-        onPress={() => setCalled((c) => !c)}
-      >
-        <Pulse active={called}>
-          <Text style={[styles.logText, called && styles.logTextDone]}>
-            {called ? "Logged, thank you ✓" : "I made the call"}
-          </Text>
-        </Pulse>
-      </Pressable>
-    </ScrollView>
+        {phone ? <Disp style={s.number}>{phone}</Disp> : null}
+
+        <View style={{ marginTop: 14 }}>
+          <PrimaryButton label="Tap to call" onPress={dial} />
+        </View>
+
+        <Pressable
+          onPress={() => {
+            if (!called) logAction("call", itemId);
+            setCalled((c) => !c);
+          }}
+          style={[s.log, called && s.logOn]}
+          accessibilityRole="button"
+        >
+          <Body style={{ color: called ? theme.colors.aqua : theme.colors.creamDim, fontFamily: theme.font.bodySemi }}>
+            {called ? "Logged on this phone ✓" : "I made the call"}
+          </Body>
+        </Pressable>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: theme.space(5), gap: theme.space(4) },
-  story: { fontSize: 15, fontWeight: "700", color: theme.colors.text, lineHeight: 21 },
-  scriptBox: {
-    backgroundColor: theme.colors.card,
-    borderWidth: 1,
-    borderColor: theme.colors.line,
-    borderRadius: theme.radius,
-    padding: theme.space(4),
-    gap: theme.space(2),
-  },
-  scriptTitle: { fontSize: 13, fontWeight: "800", color: theme.colors.accent, textTransform: "uppercase", letterSpacing: 1 },
-  scriptIntro: { fontSize: 15, fontStyle: "italic", color: theme.colors.text, lineHeight: 21 },
-  point: { fontSize: 15, color: theme.colors.text, lineHeight: 22 },
-  scriptOutro: { fontSize: 13, color: theme.colors.textMuted, lineHeight: 19, marginTop: theme.space(1) },
-  btn: { backgroundColor: theme.colors.bg, padding: theme.space(4), borderRadius: 12, alignItems: "center" },
-  btnDisabled: { backgroundColor: theme.colors.textMuted },
-  btnText: { color: theme.colors.onDark, fontWeight: "700", fontSize: 16 },
-  logBtn: { padding: theme.space(3), alignItems: "center", borderRadius: 12, borderWidth: 1, borderColor: theme.colors.line },
-  logDone: { borderColor: theme.colors.bg, backgroundColor: "#E7F0EB" },
-  logText: { color: theme.colors.textMuted, fontWeight: "700" },
-  logTextDone: { color: theme.colors.bg },
+const s = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: theme.colors.ink2 },
+  head: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 22, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: theme.colors.line },
+  mp: { fontSize: 14, fontFamily: theme.font.bodySemi, marginBottom: 16 },
+  expect: { backgroundColor: theme.colors.tray, borderRadius: theme.radius, padding: 14, marginBottom: 18 },
+  expectP: { fontSize: 12.5, color: theme.colors.creamDim, lineHeight: 19, marginTop: 8 },
+  point: { flexDirection: "row", gap: 11, alignItems: "flex-start", paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: theme.colors.line },
+  pn: { fontSize: 15, color: theme.colors.aquaDeep, width: 18 },
+  pp: { fontSize: 14, color: theme.colors.cream, flex: 1, lineHeight: 20 },
+  number: { fontSize: 22, color: theme.colors.cream, textAlign: "center", marginTop: 18, letterSpacing: 0.5 },
+  log: { marginTop: 14, padding: 14, alignItems: "center", borderWidth: 1, borderColor: theme.colors.line, borderRadius: theme.radius },
+  logOn: { borderColor: theme.colors.aquaDeep },
 });

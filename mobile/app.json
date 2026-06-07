@@ -9,14 +9,26 @@
     "newArchEnabled": true,
     "splash": {
       "resizeMode": "contain",
-      "backgroundColor": "#0B3D2E"
+      "backgroundColor": "#07130D"
     },
-    "ios": { "supportsTablet": true },
+    "ios": {
+      "supportsTablet": true
+    },
     "android": {
-      "adaptiveIcon": { "backgroundColor": "#0B3D2E" }
+      "adaptiveIcon": {
+        "backgroundColor": "#07130D"
+      }
     },
-    "web": { "bundler": "metro", "output": "static" },
-    "plugins": ["expo-router"],
-    "experiments": { "typedRoutes": true }
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
   }
 }

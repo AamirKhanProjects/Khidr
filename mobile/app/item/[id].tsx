@@ -1,75 +1,108 @@
-import { ScrollView, StyleSheet, Text, Pressable, View } from "react-native";
-import { Link, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
+import { View, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { router, useLocalSearchParams } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { theme } from "@/theme";
-import type { FeedItem } from "@/types";
-import feed from "@/data/sample-feed.json";
-import { FadeInView } from "@/components/Motion";
+import { Disp, Body, Kicker, PrimaryButton, LineButton } from "@/components/ui";
+import { fetchFeed } from "@/services/api";
+import { getRep, toggleFollow, getFollowed } from "@/store/local";
+import type { FeedItem, Rep } from "@/types";
 
 export default function ItemDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const item = (feed as FeedItem[]).find((i) => i.id === id);
+  const [item, setItem] = useState<FeedItem | null>(null);
+  const [rep, setRep] = useState<Rep | null>(null);
+  const [following, setFollowing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  if (!item) {
+  useEffect(() => {
+    (async () => {
+      const data = await fetchFeed();
+      const found = [data.lead, ...data.items].find((i) => i && i.id === id) ?? null;
+      setItem(found);
+      setRep(await getRep());
+      setFollowing((await getFollowed()).includes(String(id)));
+      setLoading(false);
+    })();
+  }, [id]);
+
+  if (loading)
     return (
-      <View style={styles.container}>
-        <Text style={styles.blurb}>Story not found.</Text>
-      </View>
+      <SafeAreaView style={s.safe}>
+        <ActivityIndicator color={theme.colors.aqua} style={{ marginTop: 60 }} />
+      </SafeAreaView>
     );
+  if (!item)
+    return (
+      <SafeAreaView style={s.safe}>
+        <Back />
+        <Body style={{ color: theme.colors.creamDim, padding: 22 }}>Story not found.</Body>
+      </SafeAreaView>
+    );
+
+  function writeToThem() {
+    if (rep?.writeToThemUrl) WebBrowser.openBrowserAsync(rep.writeToThemUrl);
+    else Alert.alert("WriteToThem", "Set up your MP first to use WriteToThem.");
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <FadeInView style={{ gap: theme.space(3) }}>
-        <Text style={styles.source}>{item.sourceName}</Text>
-        <Text style={styles.headline}>{item.headline}</Text>
-        <Text style={styles.blurb}>{item.blurb}</Text>
-
-        {/* Always link OUT to the original (never republish). */}
-        <Pressable
-          style={styles.readOriginal}
-          onPress={() => WebBrowser.openBrowserAsync(item.sourceUrl)}
-        >
-          <Text style={styles.readOriginalText}>Read the original ↗</Text>
-        </Pressable>
-
-        <View style={styles.divider} />
-
-        <Text style={styles.actionLabel}>Make your voice heard</Text>
-        <View style={styles.actions}>
-          <Link href={`/action/email?item=${item.id}`} asChild>
-            <Pressable style={[styles.btn, styles.btnPrimary]}>
-              <Text style={styles.btnPrimaryText}>Email your MP</Text>
-            </Pressable>
-          </Link>
-          <Link href={`/action/call?item=${item.id}`} asChild>
-            <Pressable style={[styles.btn, styles.btnGhost]}>
-              <Text style={styles.btnGhostText}>Call their office</Text>
-            </Pressable>
-          </Link>
+    <SafeAreaView style={s.safe} edges={["top"]}>
+      <Back />
+      <ScrollView contentContainerStyle={{ paddingBottom: 30 }}>
+        <View style={{ paddingHorizontal: 22 }}>
+          {item.topics?.length ? <Kicker>{item.topics.join(" / ")}</Kicker> : null}
+          <Disp style={s.h1}>{item.headline}</Disp>
+          <Body style={s.src}>{item.sourceName}</Body>
+          <Body style={s.blurb}>{item.blurb}</Body>
+          <Pressable onPress={() => WebBrowser.openBrowserAsync(item.sourceUrl)} accessibilityRole="link">
+            <Body style={s.readorig}>Read the original ↗</Body>
+          </Pressable>
+          {item.billId ? <Body style={s.attach}>Attached bill: {item.billId} (UK Bills API)</Body> : null}
+          <Pressable
+            onPress={async () => setFollowing(await toggleFollow(String(id)))}
+            style={s.followBtn}
+            accessibilityRole="button"
+          >
+            <Body style={{ color: theme.colors.aqua, fontFamily: theme.font.bodySemi, fontSize: 13 }}>
+              {following ? "✓ Following — you'll get the outcome" : "Follow this story"}
+            </Body>
+          </Pressable>
         </View>
-        <Text style={styles.note}>
-          Your MP, one message at a time. You write and send every message yourself.
-        </Text>
-      </FadeInView>
-    </ScrollView>
+
+        <View style={s.tray}>
+          <Kicker>Take action · contact your MP</Kicker>
+          <View style={{ gap: 10, marginTop: 13 }}>
+            <PrimaryButton label="Email your MP" onPress={() => router.push(`/action/write?item=${item.id}`)} />
+            <LineButton label="Send via WriteToThem" onPress={writeToThem} />
+            <LineButton label="Call their office" onPress={() => router.push(`/action/call?item=${item.id}`)} />
+          </View>
+          <Body style={s.micro}>
+            You write and send every message yourself. Khidr never sends on your behalf, and nothing is stored.
+          </Body>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: theme.space(5), gap: theme.space(3) },
-  source: { color: theme.colors.accent, fontWeight: "700", fontSize: 13 },
-  headline: { color: theme.colors.text, fontSize: 22, fontWeight: "800", lineHeight: 29 },
-  blurb: { color: theme.colors.text, fontSize: 16, lineHeight: 24 },
-  readOriginal: { paddingVertical: theme.space(2) },
-  readOriginalText: { color: theme.colors.bg, fontWeight: "700", fontSize: 15 },
-  divider: { height: 1, backgroundColor: theme.colors.line, marginVertical: theme.space(2) },
-  actionLabel: { color: theme.colors.textMuted, fontSize: 13, textTransform: "uppercase", letterSpacing: 1 },
-  actions: { gap: theme.space(2) },
-  btn: { paddingVertical: theme.space(3.5), borderRadius: 12, alignItems: "center" },
-  btnPrimary: { backgroundColor: theme.colors.bg },
-  btnPrimaryText: { color: theme.colors.onDark, fontWeight: "700", fontSize: 16 },
-  btnGhost: { borderWidth: 1, borderColor: theme.colors.bg },
-  btnGhostText: { color: theme.colors.bg, fontWeight: "700", fontSize: 16 },
-  note: { color: theme.colors.textMuted, fontSize: 12, lineHeight: 17 },
+function Back() {
+  return (
+    <Pressable onPress={() => router.back()} style={s.back} accessibilityRole="button" accessibilityLabel="Back">
+      <Body style={{ color: theme.colors.aqua, fontFamily: theme.font.bodySemi }}>‹ Back</Body>
+    </Pressable>
+  );
+}
+
+const s = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: theme.colors.ink },
+  back: { paddingHorizontal: 22, paddingTop: 8, paddingBottom: 6 },
+  h1: { fontSize: 26, lineHeight: 31, marginTop: 11 },
+  src: { fontSize: 12.5, color: theme.colors.creamDim, fontStyle: "italic", marginTop: 10, marginBottom: 14 },
+  blurb: { fontSize: 15.5, color: theme.colors.cream, opacity: 0.92, lineHeight: 25, marginBottom: 14 },
+  readorig: { fontSize: 14, color: theme.colors.aqua, fontFamily: theme.font.bodySemi },
+  attach: { fontSize: 11, color: theme.colors.creamFaint, fontStyle: "italic", marginTop: 12 },
+  followBtn: { marginTop: 16, paddingVertical: 4 },
+  tray: { backgroundColor: theme.colors.tray, padding: 22, marginTop: 22, borderTopWidth: 1, borderTopColor: theme.colors.lineStrong },
+  micro: { fontSize: 12, color: theme.colors.creamFaint, fontStyle: "italic", lineHeight: 18, marginTop: 14 },
 });

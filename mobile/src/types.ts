@@ -1,39 +1,45 @@
+// Shape returned by GET /api/feed (whitelisted public fields).
 export type FeedItem = {
   id: string;
   headline: string;
-  /** ORIGINAL text written in-house. Never source body copy. */
   blurb: string;
   sourceName: string;
   sourceUrl: string;
-  publishedAt: string; // ISO
   topics: string[];
-  /** UK Bills API id, to attach the actual legislation. */
-  billId?: string;
-  /** Neutral points a constituent might raise (NOT scripted demands). */
-  callPoints?: string[];
-  /** 1–2 factual sentences the AI draft can ground itself in. */
-  emailContext?: string;
+  publishedAt: string;
+  billId: string | null;
+  callPoints: string[];
+  emailContext: string | null;
 };
 
-/**
- * A UK MP. The app shell is country-agnostic; the UK module returns this shape.
- * (A future US module would map its officials into the same type.)
- */
+export type FeedResponse = {
+  lead: FeedItem | null; // Today = newest published item
+  items: FeedItem[]; // last 30 days, newest first
+};
+
+// The user's MP, resolved on-device from postcode (postcodes.io + Members API).
 export type Rep = {
-  id: string; // Members API member id
+  id: string;
   name: string;
-  office: string; // "Member of Parliament"
+  office: string;
   party?: string;
-  constituency?: string; // 2024 constituency name
-  constituencyCode?: string; // ONS code, e.g. "E14001172"
-  phones: string[]; // parliamentary / constituency office numbers
-  email?: string; // @parliament.uk address
-  /** Handoff to the trusted UK channel; always available as a fallback. */
+  constituency?: string;
+  constituencyCode?: string;
+  phones: string[];
+  email?: string;
   writeToThemUrl?: string;
-  photoUrl?: string; // Members API thumbnail
+  photoUrl?: string;
 };
 
-export type UserLocation = {
-  postcode?: string;
-  resolvedRepIds: string[];
+// Non-personal enrichment from GET /api/mp/[id] (votes + committees).
+export type MpVote = { title: string; date: string; vote: "Aye" | "No" | "No vote" };
+export type MpEnrichment = {
+  id: number;
+  name: string | null;
+  party: string | null;
+  phone: string | null;
+  email: string | null;
+  committees: string[];
+  votes: MpVote[];
+  provenance: string;
 };

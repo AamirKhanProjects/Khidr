@@ -1,29 +1,53 @@
+import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
+import { LibreCaslonDisplay_400Regular } from "@expo-google-fonts/libre-caslon-display";
+import {
+  SourceSerif4_400Regular,
+  SourceSerif4_500Medium,
+  SourceSerif4_600SemiBold,
+  SourceSerif4_700Bold,
+} from "@expo-google-fonts/source-serif-4";
 import { theme } from "@/theme";
 
+SplashScreen.preventAutoHideAsync().catch(() => {});
+
 export default function RootLayout() {
+  const [loaded] = useFonts({
+    Caslon: LibreCaslonDisplay_400Regular,
+    Serif: SourceSerif4_400Regular,
+    SerifMed: SourceSerif4_500Medium,
+    SerifSemi: SourceSerif4_600SemiBold,
+    SerifBold: SourceSerif4_700Bold,
+  });
+
+  useEffect(() => {
+    if (loaded) SplashScreen.hideAsync().catch(() => {});
+  }, [loaded]);
+
+  if (!loaded) return null;
+
   return (
-    <>
+    <SafeAreaProvider>
       <StatusBar style="light" />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: theme.colors.bg },
-          headerTintColor: theme.colors.onDark,
-          headerTitleStyle: { fontWeight: "700" },
-          contentStyle: { backgroundColor: "#F4F7F5" },
-          // Smooth fade between screens (opening a story, going to call/write).
+          headerShown: false,
           animation: "fade",
-          animationDuration: 300,
+          animationDuration: 250,
+          contentStyle: { backgroundColor: theme.colors.ink },
         }}
       >
-        <Stack.Screen name="index" options={{ title: "Khidr" }} />
-        <Stack.Screen name="onboarding" options={{ title: "Find your MP" }} />
-        <Stack.Screen name="reps" options={{ title: "Your MP" }} />
-        <Stack.Screen name="item/[id]" options={{ title: "Story" }} />
-        <Stack.Screen name="action/call" options={{ title: "Call" }} />
-        <Stack.Screen name="action/email" options={{ title: "Write" }} />
+        <Stack.Screen name="index" />
+        <Stack.Screen name="onboarding" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="item/[id]" />
+        <Stack.Screen name="action/write" options={{ presentation: "modal" }} />
+        <Stack.Screen name="action/call" options={{ presentation: "modal" }} />
       </Stack>
-    </>
+    </SafeAreaProvider>
   );
 }
