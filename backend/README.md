@@ -3,6 +3,8 @@
 Serves the admin dashboard, the public `/api/feed` the mobile app reads, and
 `/api/mp/[id]` enrichment. No AI, no user accounts. See `docs/build-brief.md`.
 
+**Live:** https://khidrdashboard.vercel.app  ·  admin at `/admin`  ·  feed at `/api/feed`
+
 ## Setup
 
 1. **Supabase**: create a project. The schema in `supabase/migrations/` (repo root)
