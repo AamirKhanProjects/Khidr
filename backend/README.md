@@ -5,8 +5,10 @@ Serves the admin dashboard, the public `/api/feed` the mobile app reads, and
 
 ## Setup
 
-1. **Supabase**: create a project. In the SQL editor, run `supabase/schema.sql`.
-   Copy the project URL and the **service role** key (Project Settings → API).
+1. **Supabase**: create a project. The schema in `supabase/migrations/` (repo root)
+   is applied automatically when you link this GitHub repo to Supabase. (Or paste
+   `supabase/migrations/20260607120000_init.sql` into the SQL editor once.) Copy the
+   project URL and the **service role** key (Project Settings → API).
 2. **Env**: `cp .env.example .env.local` and fill:
    - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
    - `ADMIN_PASSWORD` (a strong password you choose)

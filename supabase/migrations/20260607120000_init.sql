@@ -1,15 +1,16 @@
--- Khidr database schema (Supabase / Postgres).
--- Run in the Supabase SQL editor. The backend connects with the SERVICE ROLE key
--- (server-side only), so RLS is enabled and locked down: no anon access at all.
--- The mobile app NEVER talks to Supabase directly; it only reads /api/feed.
+-- Khidr initial schema. Applied automatically when Supabase is linked to this
+-- GitHub repo (Supabase reads supabase/migrations/*.sql).
+-- The backend connects with the SERVICE ROLE key (server-side only); RLS is
+-- enabled and locked down (no anon access). The mobile app never touches the DB
+-- directly — it only reads /api/feed.
 
 -- ---------------------------------------------------------------------------
--- published_items: what the operator has chosen to publish. Mobile reads these.
+-- published_items: what the operator has published. The app reads these.
 -- ---------------------------------------------------------------------------
 create table if not exists published_items (
   id            uuid primary key default gen_random_uuid(),
   headline      text not null,
-  -- OUR words. Required. Never source text. Enforced NOT NULL + non-empty.
+  -- OUR words. Required + non-empty. Never source text.
   blurb         text not null check (length(btrim(blurb)) > 0),
   source_name   text not null,
   source_url    text not null,
@@ -26,8 +27,8 @@ create index if not exists published_items_published_at_idx
 
 -- ---------------------------------------------------------------------------
 -- candidates: v1.1 seam for the (publisher-RSS) aggregator. UNUSED in v1.
--- raw_summary is the source's own text: FOR OPERATOR READING ONLY in the admin
--- dashboard. It must NEVER be served to end users or exposed on a public route.
+-- raw_summary is the source's own text: operator-reading only in the admin UI;
+-- NEVER served to end users or exposed on a public route.
 -- ---------------------------------------------------------------------------
 create table if not exists candidates (
   id             uuid primary key default gen_random_uuid(),
@@ -46,9 +47,8 @@ create unique index if not exists candidates_url_uniq on candidates (source_url)
 create index if not exists candidates_score_idx on candidates (score desc);
 
 -- ---------------------------------------------------------------------------
--- Row Level Security: deny everything to anon/public. Only the service role
--- (used server-side by the Next.js backend) bypasses RLS. No policies = no
--- access for anon, which is exactly what we want.
+-- RLS: deny all to anon/public. Only the service role (server-side backend)
+-- bypasses RLS. No policies = no anon access, which is what we want.
 -- ---------------------------------------------------------------------------
 alter table published_items enable row level security;
 alter table candidates      enable row level security;
