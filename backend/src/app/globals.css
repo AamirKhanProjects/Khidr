@@ -53,6 +53,13 @@ a{color:var(--aqua)}
 .liveitem .m{font-size:11.5px;color:var(--cream-faint);margin-top:3px}
 .leadtag{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--emerald);font-weight:700}
 
+/* candidate queue */
+.candrow{display:flex;gap:16px;align-items:flex-start;padding:15px 0;border-bottom:1px solid var(--line)}
+.candrow:last-child{border-bottom:none}
+.candmeta{font-size:10.5px;color:var(--cream-faint);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px}
+.candtitle{font-family:var(--disp);font-size:16px;line-height:1.22}
+.candacts{display:flex;flex-direction:column;gap:8px;flex:0 0 auto}
+
 /* login */
 .loginwrap{max-width:380px;margin:14vh auto 0;padding:0 24px}
 .loginwrap .brand{font-size:40px;margin-bottom:8px}

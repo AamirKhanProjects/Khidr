@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
+
+function timeAgo(iso: string): string {
+  const h = Math.floor((Date.now() - new Date(iso).getTime()) / 3_600_000);
+  if (h < 1) return "just now";
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
 
 const TOPIC_OPTIONS = [
   "gaza",
@@ -21,6 +28,17 @@ type LiveItem = {
   topics: string[];
 };
 
+type Candidate = {
+  id: string;
+  headline: string;
+  source_name: string | null;
+  source_url: string;
+  raw_summary: string | null;
+  matched_topics: string[];
+  score: number;
+  seen_at: string;
+};
+
 export default function Dashboard() {
   // compose state
   const [url, setUrl] = useState("");
@@ -39,15 +57,55 @@ export default function Dashboard() {
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
   const [live, setLive] = useState<LiveItem[]>([]);
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const fromCandidate = useRef<string | null>(null);
 
   const loadLive = useCallback(async () => {
     const res = await fetch("/api/admin/items");
     if (res.ok) setLive((await res.json()).items ?? []);
   }, []);
+  const loadCandidates = useCallback(async () => {
+    const res = await fetch("/api/admin/candidates");
+    if (res.ok) setCandidates((await res.json()).candidates ?? []);
+  }, []);
 
   useEffect(() => {
     loadLive();
-  }, [loadLive]);
+    loadCandidates();
+  }, [loadLive, loadCandidates]);
+
+  async function refreshCandidates() {
+    setRefreshing(true);
+    try {
+      await fetch("/api/cron/aggregate", { method: "POST" });
+      await loadCandidates();
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
+  function useCandidate(c: Candidate) {
+    fromCandidate.current = c.id;
+    setHeadline(c.headline);
+    setSourceName(c.source_name || "");
+    setSourceUrl(c.source_url);
+    setSourceSummary(c.raw_summary || "");
+    setBlurb("");
+    setTopics((c.matched_topics || []).filter((t) => TOPIC_OPTIONS.includes(t)));
+    setErr("");
+    setOk("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function dismissCandidate(id: string) {
+    setCandidates((cur) => cur.filter((c) => c.id !== id));
+    await fetch("/api/admin/candidates", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id, action: "dismiss" }),
+    });
+  }
 
   async function pullUrl() {
     setErr("");
@@ -108,6 +166,11 @@ export default function Dashboard() {
         return;
       }
       setOk("Published. Live in the app on next fetch.");
+      // if this came from a candidate, drop it from the queue
+      if (fromCandidate.current) {
+        dismissCandidate(fromCandidate.current);
+        fromCandidate.current = null;
+      }
       // reset compose
       setUrl("");
       setHeadline("");
@@ -162,6 +225,47 @@ export default function Dashboard() {
         <button className="btn btn-line" onClick={pullUrl} disabled={fetching || !url.trim()} style={{ whiteSpace: "nowrap" }}>
           {fetching ? "Reading…" : "Pull"}
         </button>
+      </div>
+
+      {/* Candidate queue (suggestions from publisher RSS; never auto-published) */}
+      <div className="panel" style={{ marginTop: 22 }}>
+        <div className="row" style={{ justifyContent: "space-between" }}>
+          <div className="kicker">Candidate queue — suggestions only, never auto-published</div>
+          <button className="btn btn-line" onClick={refreshCandidates} disabled={refreshing}>
+            {refreshing ? "Refreshing…" : "Refresh"}
+          </button>
+        </div>
+        {candidates.length === 0 && (
+          <p className="faint" style={{ fontSize: 13, marginTop: 12 }}>
+            No suggestions yet. Hit <b>Refresh</b> to pull the latest from the feeds.
+          </p>
+        )}
+        <div style={{ marginTop: 10, maxHeight: 420, overflowY: "auto" }}>
+          {candidates.map((c) => (
+            <div className="candrow" key={c.id}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="candmeta">
+                  {c.source_name} · {timeAgo(c.seen_at)}
+                  {c.matched_topics?.length ? " · " + c.matched_topics.slice(0, 3).join(", ") : ""}
+                </div>
+                <div className="candtitle">{c.headline}</div>
+                {c.raw_summary && (
+                  <div className="grey" style={{ marginTop: 7, fontSize: 12 }}>
+                    {c.raw_summary}
+                  </div>
+                )}
+              </div>
+              <div className="candacts">
+                <button className="btn btn-solid" style={{ padding: "8px 16px", fontSize: 13 }} onClick={() => useCandidate(c)}>
+                  Use
+                </button>
+                <button className="btn btn-danger" onClick={() => dismissCandidate(c.id)}>
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="cols" style={{ marginTop: 22 }}>
