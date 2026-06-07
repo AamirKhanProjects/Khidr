@@ -2,3 +2,4 @@
 # supabase/migrations/ to the linked project. Set this to your project ref if you
 # use the Supabase CLI locally (Project Settings -> General -> Reference ID).
 project_id = "khidr"
+# trigger: apply initial migration via GitHub integration
